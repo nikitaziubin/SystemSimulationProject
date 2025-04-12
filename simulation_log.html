@@ -1,0 +1,1326 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Communication Simulation Log</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.4; padding: 20px; background-color: #f4f4f4; }
+        h1 { text-align: center; color: #333; }
+        .log-entry {
+            border-left: 5px solid #ccc;
+            padding: 8px 15px;
+            margin-bottom: 8px;
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        .log-entry .time { font-weight: bold; color: #555; min-width: 50px; display: inline-block;}
+        .log-entry .type { font-weight: bold; margin: 0 10px; padding: 2px 6px; border-radius: 3px; color: white; }
+        .log-INIT { border-left-color: #777; } .type-INIT { background-color: #777; }
+        .log-START { border-left-color: #2a9fd6; } .type-START { background-color: #2a9fd6; }
+        .log-END { border-left-color: #2a9fd6; } .type-END { background-color: #2a9fd6; }
+        .log-CONNECT { border-left-color: #4CAF50; } .type-CONNECT { background-color: #4CAF50; }
+        .log-DISCONNECT { border-left-color: #ff9800; } .type-DISCONNECT { background-color: #ff9800; }
+        .log-QUEUE { border-left-color: #607d8b; } .type-QUEUE { background-color: #607d8b; }
+        .log-DATA_TX { border-left-color: #00bcd4; } .type-DATA_TX { background-color: #00bcd4; color: #333; }
+        .log-ERROR { border-left-color: #f44336; } .type-ERROR { background-color: #f44336; }
+        .log-MAINTENANCE { border-left-color: #9c27b0; } .type-MAINTENANCE { background-color: #9c27b0; }
+        .log-INFO { border-left-color: #bdbdbd; } .type-INFO { background-color: #bdbdbd; color: #333;}
+        .log-WARNING { border-left-color: #ffeb3b; } .type-WARNING { background-color: #ffeb3b; color: #333;}
+
+    </style>
+</head>
+<body>
+    <h1>Satellite Communication Simulation Log</h1>
+    <div id="log-container">
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-0 initialized (Prio:False, Data:24.2GB, Pos:(-5, -130)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-1 initialized (Prio:False, Data:12.8GB, Pos:(-134, 157)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-2 initialized (Prio:True, Data:48.8GB, Pos:(49, -40)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-3 initialized (Prio:False, Data:20.4GB, Pos:(-248, 10)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-4 initialized (Prio:True, Data:21.7GB, Pos:(-32, -5)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-5 initialized (Prio:False, Data:49.7GB, Pos:(-76, 27)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-6 initialized (Prio:False, Data:49.2GB, Pos:(15, 234)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-7 initialized (Prio:False, Data:27.3GB, Pos:(-163, -201)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-8 initialized (Prio:False, Data:10.5GB, Pos:(157, 12)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-9 initialized (Prio:False, Data:49.4GB, Pos:(63, 17)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-10 initialized (Prio:False, Data:16.7GB, Pos:(243, 159)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-11 initialized (Prio:False, Data:25.4GB, Pos:(3, 171)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-12 initialized (Prio:True, Data:21.4GB, Pos:(-41, -143)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-13 initialized as DAMAGED.</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Satellite-14 initialized (Prio:False, Data:36.6GB, Pos:(168, -47)).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Station-0 initialized (Capacity:2, Pos:(0, 0), Maintenance:[(120, 180)]).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Station-1 initialized (Capacity:3, Pos:(100, 50), Maintenance:[(300, 360)]).</span>
+        </div>
+        <div class="log-entry log-INIT">
+            <span class="time">00:00</span>
+            <span class="type type-INIT">INIT</span>
+            <span class="message">Station-2 initialized (Capacity:4, Pos:(-50, 100), Maintenance:[]).</span>
+        </div>
+        <div class="log-entry log-START">
+            <span class="time">00:00</span>
+            <span class="type type-START">START</span>
+            <span class="message">Simulation Started. Duration: 1440 mins, Step: 5 mins.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-10 connected to Station-1 (Dist: 179.8).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-5 connected to Station-2 (Dist: 77.5).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-4 connected to Station-0 (Dist: 32.4).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-0 connected to Station-0 (Dist: 130.1).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-9 connected to Station-1 (Dist: 49.6).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-8 connected to Station-1 (Dist: 68.5).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:00</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-12 added to queue (Prio:True).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:00</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-2 added to queue (Prio:True).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-6 connected to Station-2 (Dist: 148.9).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:00</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-1 is full. Sat-14 added to queue (Prio:False).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-1 connected to Station-2 (Dist: 101.5).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-11 connected to Station-2 (Dist: 88.6).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-4 -&gt; Station-0: Sent 7.50 GB. (Remaining: 14.2 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-0 -&gt; Station-0: Sent 7.50 GB. (Remaining: 16.7 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-10 -&gt; Station-1: Sent 7.50 GB. (Remaining: 9.2 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 7.50 GB. (Remaining: 41.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-8 -&gt; Station-1: Sent 7.50 GB. (Remaining: 3.0 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 7.50 GB. (Remaining: 42.2 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 7.50 GB. (Remaining: 41.7 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-1 -&gt; Station-2: Sent 7.50 GB. (Remaining: 5.3 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 7.50 GB. (Remaining: 17.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-4 -&gt; Station-0: Sent 2.50 GB. (Remaining: 11.7 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-4 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-0 -&gt; Station-0: Sent 2.50 GB. (Remaining: 14.2 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-0 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-10 -&gt; Station-1: Sent 2.50 GB. (Remaining: 6.7 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-10 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 39.4 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-9 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-8 -&gt; Station-1: Sent 2.50 GB. (Remaining: 0.5 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-8 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 39.7 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-5 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-ERROR">
+            <span class="time">00:05</span>
+            <span class="type type-ERROR">ERROR</span>
+            <span class="message">JAMMING detected for Sat-6 -&gt; Station-2. No data transmitted this step.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-1 -&gt; Station-2: Sent 2.50 GB. (Remaining: 2.8 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-1 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 2.50 GB. (Remaining: 15.4 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-11 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-12 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-2 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-14 connected to Station-1 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-1 connected to Station-2 (Dist: 101.5).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-8 connected to Station-1 (Dist: 68.5).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-10 connected to Station-1 (Dist: 179.8).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:10</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-1 is full. Sat-9 added to queue (Prio:False).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-5 connected to Station-2 (Dist: 77.5).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:10</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-0 added to queue (Prio:False).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-11 connected to Station-2 (Dist: 88.6).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:10</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-4 added to queue (Prio:True).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-12 -&gt; Station-0: Sent 7.50 GB. (Remaining: 13.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 7.50 GB. (Remaining: 41.3 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 7.50 GB. (Remaining: 29.1 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-8 -&gt; Station-1: Sent 0.46 GB. (Remaining: 0.0 GB, Sent this contact: 0.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-8 disconnected from Station-1. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-10 -&gt; Station-1: Sent 2.50 GB. (Remaining: 4.2 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 39.2 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:10</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-6 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-1 -&gt; Station-2: Sent 2.50 GB. (Remaining: 0.3 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 37.2 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 2.50 GB. (Remaining: 12.9 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:15</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-9 connected to Station-1 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:15</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-6 connected to Station-2 (Dist: 148.9).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-12 -&gt; Station-0: Sent 2.50 GB. (Remaining: 11.4 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:15</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-12 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 38.8 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:15</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-2 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 26.6 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:15</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-14 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-10 -&gt; Station-1: Sent 2.50 GB. (Remaining: 1.7 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 36.9 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-ERROR">
+            <span class="time">00:15</span>
+            <span class="type type-ERROR">ERROR</span>
+            <span class="message">Transmission error for Sat-1 -&gt; Station-2. Data rate reduced.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-1 -&gt; Station-2: Sent 0.31 GB. (Remaining: 0.0 GB, Sent this contact: 2.8/10 GB).  Error occurred.</span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:15</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-1 disconnected from Station-2. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 34.7 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 2.50 GB. (Remaining: 10.4 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-ERROR">
+            <span class="time">00:15</span>
+            <span class="type type-ERROR">ERROR</span>
+            <span class="message">JAMMING detected for Sat-6 -&gt; Station-2. No data transmitted this step.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:20</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-4 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:20</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-0 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:20</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-2 added to queue (Prio:True).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:20</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-12 added to queue (Prio:True).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:20</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-14 connected to Station-1 (Dist: 118.5).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-4 -&gt; Station-0: Sent 2.50 GB. (Remaining: 9.2 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-0 -&gt; Station-0: Sent 2.50 GB. (Remaining: 11.7 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-10 -&gt; Station-1: Sent 1.74 GB. (Remaining: 0.0 GB, Sent this contact: 6.7/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:20</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-10 disconnected from Station-1. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 34.4 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 24.1 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 32.2 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 2.50 GB. (Remaining: 7.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 36.7 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-4 -&gt; Station-0: Sent 2.50 GB. (Remaining: 6.7 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-0 -&gt; Station-0: Sent 2.50 GB. (Remaining: 9.2 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 31.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 21.6 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 29.7 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:25</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-5 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 2.50 GB. (Remaining: 5.4 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:25</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-11 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 34.2 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:30</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-5 connected to Station-2 (Dist: 77.5).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:30</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-11 connected to Station-2 (Dist: 88.6).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-4 -&gt; Station-0: Sent 2.50 GB. (Remaining: 4.2 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-0 -&gt; Station-0: Sent 2.50 GB. (Remaining: 6.7 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 29.4 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:30</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-9 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 19.1 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 31.7 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 27.2 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 2.50 GB. (Remaining: 2.9 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:35</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-9 connected to Station-1 (Dist: 49.6).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-4 -&gt; Station-0: Sent 2.50 GB. (Remaining: 1.7 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:35</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-4 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-0 -&gt; Station-0: Sent 2.50 GB. (Remaining: 4.2 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:35</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-0 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 16.6 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:35</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-14 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 26.9 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 29.2 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:35</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-6 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 24.7 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 2.50 GB. (Remaining: 0.4 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:40</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-2 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:40</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-12 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:40</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-6 connected to Station-2 (Dist: 148.9).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:40</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-14 connected to Station-1 (Dist: 118.5).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:40</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-0 added to queue (Prio:False).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">00:40</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-4 added to queue (Prio:True).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 36.3 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-12 -&gt; Station-0: Sent 2.50 GB. (Remaining: 8.9 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 24.4 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 14.1 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 22.2 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-11 -&gt; Station-2: Sent 0.40 GB. (Remaining: 0.0 GB, Sent this contact: 5.4/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:40</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-11 disconnected from Station-2. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 26.7 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:45</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 33.8 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:45</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-12 -&gt; Station-0: Sent 2.50 GB. (Remaining: 6.4 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:45</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 21.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:45</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 11.6 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-ERROR">
+            <span class="time">00:45</span>
+            <span class="type type-ERROR">ERROR</span>
+            <span class="message">JAMMING detected for Sat-5 -&gt; Station-2. No data transmitted this step.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:45</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 24.2 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:50</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 31.3 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:50</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-12 -&gt; Station-0: Sent 2.50 GB. (Remaining: 3.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:50</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 19.4 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:50</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-9 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:50</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 9.1 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:50</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 19.7 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:50</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-5 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:50</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 21.7 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:55</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-9 connected to Station-1 (Dist: 49.6).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">00:55</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-5 connected to Station-2 (Dist: 77.5).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:55</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 28.8 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:55</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-2 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:55</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-12 -&gt; Station-0: Sent 2.50 GB. (Remaining: 1.4 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:55</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-12 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:55</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 6.6 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:55</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-14 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:55</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 16.9 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:55</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 19.2 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">00:55</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-6 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">00:55</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 17.2 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-4 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-0 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-14 connected to Station-1 (Dist: 118.5).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">01:00</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-2 added to queue (Prio:True).</span>
+        </div>
+        <div class="log-entry log-QUEUE">
+            <span class="time">01:00</span>
+            <span class="type type-QUEUE">QUEUE</span>
+            <span class="message">Station-0 is full. Sat-12 added to queue (Prio:True).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-6 connected to Station-2 (Dist: 148.9).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-4 -&gt; Station-0: Sent 1.75 GB. (Remaining: 0.0 GB, Sent this contact: 1.7/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:00</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-4 disconnected from Station-0. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-0 -&gt; Station-0: Sent 2.50 GB. (Remaining: 1.7 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 14.4 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 4.1 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 14.7 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-ERROR">
+            <span class="time">01:00</span>
+            <span class="type type-ERROR">ERROR</span>
+            <span class="message">JAMMING detected for Sat-6 -&gt; Station-2. No data transmitted this step.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:05</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-2 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-0 -&gt; Station-0: Sent 1.71 GB. (Remaining: 0.0 GB, Sent this contact: 4.2/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:05</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-0 disconnected from Station-0. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 26.3 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 11.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 2.50 GB. (Remaining: 1.6 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 12.2 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:05</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 16.7 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:10</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-12 connected to Station-0 from queue.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 23.8 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-12 -&gt; Station-0: Sent 1.44 GB. (Remaining: 0.0 GB, Sent this contact: 1.4/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:10</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-12 disconnected from Station-0. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 9.4 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:10</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-9 disconnected from Station-1. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-14 -&gt; Station-1: Sent 1.60 GB. (Remaining: 0.0 GB, Sent this contact: 6.6/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:10</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-14 disconnected from Station-1. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 9.7 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:10</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-5 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:10</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 14.2 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:15</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-5 connected to Station-2 (Dist: 77.5).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:15</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-9 connected to Station-1 (Dist: 49.6).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 21.3 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 6.9 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 11.7 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-ERROR">
+            <span class="time">01:15</span>
+            <span class="type type-ERROR">ERROR</span>
+            <span class="message">Transmission error for Sat-5 -&gt; Station-2. Data rate reduced.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:15</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 1.25 GB. (Remaining: 8.5 GB, Sent this contact: 1.2/10 GB).  Error occurred.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 18.8 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:20</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-2 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 4.4 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 9.2 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:20</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-6 disconnected from Station-2. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:20</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 6.0 GB, Sent this contact: 3.8/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:25</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-6 connected to Station-2 (Dist: 148.9).</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:25</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-2 connected to Station-0 (Dist: 63.3).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 16.3 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 2.50 GB. (Remaining: 1.9 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 3.5 GB, Sent this contact: 6.2/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:25</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 6.7 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 13.8 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-9 -&gt; Station-1: Sent 1.87 GB. (Remaining: 0.0 GB, Sent this contact: 9.4/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:30</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-9 disconnected from Station-1. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 2.50 GB. (Remaining: 1.0 GB, Sent this contact: 8.8/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:30</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 4.2 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 11.3 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-5 -&gt; Station-2: Sent 0.99 GB. (Remaining: 0.0 GB, Sent this contact: 9.7/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:35</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-5 disconnected from Station-2. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-ERROR">
+            <span class="time">01:35</span>
+            <span class="type type-ERROR">ERROR</span>
+            <span class="message">Transmission error for Sat-6 -&gt; Station-2. Data rate reduced.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:35</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 1.25 GB. (Remaining: 3.0 GB, Sent this contact: 6.2/10 GB).  Error occurred.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 8.8 GB, Sent this contact: 10.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:40</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-2 disconnected from Station-0. Reason: Contact data limit (10 GB) reached.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:40</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 2.50 GB. (Remaining: 0.5 GB, Sent this contact: 8.8/10 GB).  </span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">01:45</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-2 connected to Station-0 (Dist: 63.3).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:45</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 6.3 GB, Sent this contact: 2.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:45</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-6 -&gt; Station-2: Sent 0.47 GB. (Remaining: 0.0 GB, Sent this contact: 9.2/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">01:45</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-6 disconnected from Station-2. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:50</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 3.8 GB, Sent this contact: 5.0/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">01:55</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-0: Sent 2.50 GB. (Remaining: 1.3 GB, Sent this contact: 7.5/10 GB).  </span>
+        </div>
+        <div class="log-entry log-MAINTENANCE">
+            <span class="time">02:00</span>
+            <span class="type type-MAINTENANCE">MAINTENANCE</span>
+            <span class="message">Station-0 going offline for maintenance. Disconnecting Sat-2.</span>
+        </div>
+        <div class="log-entry log-CONNECT">
+            <span class="time">02:00</span>
+            <span class="type type-CONNECT">CONNECT</span>
+            <span class="message">Sat-2 connected to Station-1 (Dist: 103.4).</span>
+        </div>
+        <div class="log-entry log-DATA_TX">
+            <span class="time">02:00</span>
+            <span class="type type-DATA_TX">DATA_TX</span>
+            <span class="message">Sat-2 -&gt; Station-1: Sent 1.26 GB. (Remaining: 0.0 GB, Sent this contact: 1.3/10 GB).  </span>
+        </div>
+        <div class="log-entry log-DISCONNECT">
+            <span class="time">02:00</span>
+            <span class="type type-DISCONNECT">DISCONNECT</span>
+            <span class="message">Sat-2 disconnected from Station-1. Reason: Data transfer complete.</span>
+        </div>
+        <div class="log-entry log-MAINTENANCE">
+            <span class="time">03:00</span>
+            <span class="type type-MAINTENANCE">MAINTENANCE</span>
+            <span class="message">Station-0 is back online after maintenance.</span>
+        </div>
+        <div class="log-entry log-MAINTENANCE">
+            <span class="time">06:00</span>
+            <span class="type type-MAINTENANCE">MAINTENANCE</span>
+            <span class="message">Station-1 is back online after maintenance.</span>
+        </div>
+        <div class="log-entry log-END">
+            <span class="time">24:00</span>
+            <span class="type type-END">END</span>
+            <span class="message">Simulation Finished.</span>
+        </div>
+
+    </div>
+</body>
+</html>
