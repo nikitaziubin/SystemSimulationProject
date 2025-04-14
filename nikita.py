@@ -3,6 +3,10 @@ import math
 import random
 import os # To help locate the image file
 
+#Todo: Add capacity for station: max 3
+#Todo: Add that the radius of the station will be not a circle but the Half of the circle
+#Todo: Add visualization as in the papa project
+
 # Initialize Pygame
 pygame.init()
 
