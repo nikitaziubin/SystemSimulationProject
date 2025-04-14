@@ -209,6 +209,9 @@ def create_satellite(sat_type):
     if sat_type == 'A': speed = random.uniform(MIN_SPEED_A, MAX_SPEED_A); color = SATELLITE_BLUE
     elif sat_type == 'B': speed = random.uniform(MIN_SPEED_B, MAX_SPEED_B); color = SATELLITE_GREEN
     else: return
+    if random.random() < 0.4:
+        speed *= -1
+
     satellites.append(Satellite(orbit_radius=orbit_radius, speed=speed, color=color))
     print(f"Created Type {sat_type} satellite with radius {orbit_radius:.0f}, speed {speed:.4f}")
 
