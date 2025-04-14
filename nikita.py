@@ -1,49 +1,47 @@
-# -*- coding: utf-8 -*-
 import pygame
 import math
 import random
-import os  # To help locate the image file
+import os  
 
-# Initialize Pygame
 pygame.init()
 
 #Todo: Add capacity for station: max 3
 #Todo: Add that the radius of the station will be not a circle but the Half of the circle
 #Todo: Add visualization as in the papa project
-# --- Configuration ---
+
 WIDTH, HEIGHT = 1200, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Interactive Satellite Simulation v5 - Enhanced Visuals") # Updated caption
 clock = pygame.time.Clock()
 
-# Colors
 BLACK = (0, 0, 0)
 DARK_SPACE = (10, 10, 30)
-SATELLITE_BLUE = (0, 0, 255)
-SATELLITE_GREEN = (0, 255, 0)
+SATELLITE_BLUE = (0, 100, 180)
+SATELLITE_GREEN = (0, 150, 80)
 BLINK_RED = (255, 50, 50)
-DAMAGED_SATELLITE_COLOR = (100, 100, 100) # Grey for damaged body
-DAMAGED_PANEL_COLOR = (80, 80, 80)       # Darker grey for damaged panels
-OPERATIONAL_PANEL_COLOR = (200, 200, 0) # Yellowish for operational panels
+
+DAMAGED_SATELLITE_COLOR = (100, 100, 100) 
+DAMAGED_PANEL_COLOR = (80, 80, 80)
+OPERATIONAL_PANEL_COLOR = (180, 180, 60)
+
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
 STAR_COLOR = (200, 200, 200)
-STATION_COLOR = (192, 192, 192)
-STATION_SELECTED_COLOR = (255, 255, 255)
-# Adjusted Alpha for shading effect
-COMM_RADIUS_COLOR = (0, 120, 0, 100) # Slightly lower alpha for subtlety
-COMM_RADIUS_SELECTED_COLOR = (0, 200, 0, 130) # Slightly lower alpha for subtlety
+STATION_COLOR = (120, 120, 120)
+STATION_SELECTED_COLOR = (200, 200, 200)
+
+COMM_RADIUS_COLOR = (0, 120, 0, 100)
+COMM_RADIUS_SELECTED_COLOR = (0, 200, 0, 130)
 COMM_LINE_COLOR = (180, 180, 180)
-# Color for capacity indicator
+
 CAPACITY_FULL_COLOR = (255, 0, 0)
 CAPACITY_NORMAL_COLOR = (0, 255, 0)
 
-# --- Constants ---
 EARTH_RADIUS = 50
 EARTH_POSITION = (WIDTH // 2, HEIGHT // 2)
 STATION_MIN_DISTANCE = 40
 MIN_STATION_COMM_RADIUS = 20
-MAX_STATION_COMM_RADIUS = 300 # Keep reduced max radius
+MAX_STATION_COMM_RADIUS = 300 
 STATION_SELECTION_RADIUS = 20
 STATION_ALPHA_NORMAL = 180
 STATION_ALPHA_SELECTED = 255
