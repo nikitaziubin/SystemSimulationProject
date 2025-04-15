@@ -37,7 +37,7 @@ COMM_LINE_COLOR = (180, 180, 180)
 CAPACITY_FULL_COLOR = (255, 0, 0)
 CAPACITY_NORMAL_COLOR = (0, 255, 0)
 
-EARTH_RADIUS = 50
+EARTH_RADIUS = 100
 EARTH_POSITION = (WIDTH // 2, HEIGHT // 2)
 STATION_MIN_DISTANCE = 40
 MIN_STATION_COMM_RADIUS = 20
@@ -239,8 +239,6 @@ class Station:
                     pygame.draw.polygon(radius_surface, radius_color, polygon_points)
                 except Exception as e:
                     print(f"Warning: Could not draw polygon for station {self.id} - {e}")        
-            dash_length = 6
-            gap_length = 4
             outline_color = (20, 70, 20)  # Light green dashed line
 
             for i in range(1, len(polygon_points) - 1):
