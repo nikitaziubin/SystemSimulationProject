@@ -48,15 +48,12 @@ STATION_ALPHA_SELECTED = 255
 STATION_RADIUS_CLICK_CHANGE = 10
 STATION_MAX_CAPACITY = 3
 STATION_COMM_ANGLE_DEG = 210
-# *** Added for Polygon Arc ***
-STATION_ARC_POLYGON_SEGMENTS = 20 # More segments = smoother arc
 
+STATION_ARC_POLYGON_SEGMENTS = 20
 
-# Satellite Orbit Radii
 MIN_ORBIT_RADIUS = EARTH_RADIUS + 30
-MAX_ORBIT_RADIUS = min(WIDTH // 2, HEIGHT // 2) - 50
+MAX_ORBIT_RADIUS = min(WIDTH // 2, HEIGHT // 2) - 100
 
-# Satellite Speeds
 MIN_SPEED_A = 0.001
 MAX_SPEED_A = 0.006
 MIN_SPEED_B = 0.002
@@ -67,7 +64,6 @@ SATELLITE_DAMAGE_PROBABILITY = 0.0003
 BLINK_DURATION_MS = 5000
 BLINK_INTERVAL_MS = 250
 
-# Star Background
 STAR_COUNT = 350
 stars = [(random.randint(0, WIDTH), random.randint(0, HEIGHT), random.uniform(0.5, 1.5)) for _ in range(STAR_COUNT)]
 
@@ -93,17 +89,14 @@ except pygame.error as e:
     print(f"Error loading image: {e}. Using fallback drawing.")
     earth_image = None
 
-# --- Global Variables ---
 selected_station = None
-
-# --- Classes ---
 
 class Satellite:
     def __init__(self, orbit_radius, speed, color):
         self.orbit_radius = orbit_radius
         self.speed = speed
-        self.initial_color = color # Base color (Blue/Green)
-        self.color = color         # Current *body* color
+        self.initial_color = color 
+        self.color = color         
         self.angle = random.uniform(0, 2 * math.pi)
         self.status = 'operational'
         self.x = EARTH_POSITION[0] + self.orbit_radius * math.cos(self.angle)
@@ -114,13 +107,11 @@ class Satellite:
         self.connected_to = None
 
     def update(self, current_ticks):
-        # Disconnect logic (same as before)
         if self.connected_to and (self.status != 'operational' or self.connected_to not in stations):
              if self.connected_to in stations:
                  self.connected_to.disconnect_satellite(self)
              self.connected_to = None
 
-        # Status and movement logic (same as before)
         if self.status == 'operational':
             self.angle += self.speed
             self.angle %= 2 * math.pi
@@ -148,10 +139,8 @@ class Satellite:
 
         x, y = int(self.x), int(self.y)
 
-        # --- CHANGE: More Realistic Satellite Drawing (Body + Panels) ---
-
         body_radius = 6
-        panel_length = 12 # Slightly shorter panels
+        panel_length = 12 
         panel_width = 3
 
         # Determine current body color
@@ -169,25 +158,18 @@ class Satellite:
         panel_color = OPERATIONAL_PANEL_COLOR
         if self.status == 'damaging':
             if self.blink_on:
-                # Optionally hide panels or make them red during blink? Let's keep them red like body.
                 panel_color = BLINK_RED
-                # draw_panels = False # Option to hide during blink pulse
-            else: # Damaged, not blinking
+            else: 
                 panel_color = DAMAGED_PANEL_COLOR
 
-        # Draw panels if applicable
         if draw_panels:
-            # Calculate panel angle (perpendicular to orbit direction for simplicity)
             panel_angle_rad = self.angle + math.pi / 2
 
-            # Calculate end points for the two panels extending from the body edge
-            # Panel 1
             p1_start_x = x + math.cos(panel_angle_rad) * body_radius
             p1_start_y = y + math.sin(panel_angle_rad) * body_radius
             p1_end_x = x + math.cos(panel_angle_rad) * (body_radius + panel_length)
             p1_end_y = y + math.sin(panel_angle_rad) * (body_radius + panel_length)
 
-            # Panel 2 (opposite direction)
             p2_start_x = x - math.cos(panel_angle_rad) * body_radius
             p2_start_y = y - math.sin(panel_angle_rad) * body_radius
             p2_end_x = x - math.cos(panel_angle_rad) * (body_radius + panel_length)
@@ -196,9 +178,6 @@ class Satellite:
             pygame.draw.line(surface, panel_color, (int(p1_start_x), int(p1_start_y)), (int(p1_end_x), int(p1_end_y)), panel_width)
             pygame.draw.line(surface, panel_color, (int(p2_start_x), int(p2_start_y)), (int(p2_end_x), int(p2_end_y)), panel_width)
 
-        # --- End of Realistic Satellite Drawing ---
-
-        # Draw connection line (always)
         if self.connected_to:
              pygame.draw.line(surface, COMM_LINE_COLOR, (x, y),
                               (int(self.connected_to.x), int(self.connected_to.y)), 1)
@@ -218,60 +197,62 @@ class Station:
         self.capacity = STATION_MAX_CAPACITY
         self.connected_satellites = []
 
-        # Angle relative to Earth center (used for arc orientation)
         dx = self.x - EARTH_POSITION[0]
         dy = self.y - EARTH_POSITION[1]
-        self.base_angle_rad = math.atan2(dy, dx) # Standard math angle
+        self.base_angle_rad = math.atan2(dy, dx)
 
 
     def draw(self, screen_surface, is_selected):
         radius_color_tuple = COMM_RADIUS_SELECTED_COLOR if is_selected else COMM_RADIUS_COLOR
+
+        if is_selected:
+            radius_color_tuple = (0, 200, 0, 60)
+        else:
+            radius_color_tuple = (0, 120, 0, 30)   
+
         radius_color = pygame.Color(*radius_color_tuple) # Includes alpha
 
-        # --- CHANGE: Draw Communication Range as a Shaded Polygon Arc ---
-        if self.comm_radius > 0: # Only draw if there's a radius
-            # Create a surface for the arc to handle alpha transparency
-            radius_surface_size = int(self.comm_radius * 2) + 4 # Add padding
+        if self.comm_radius > 0:
+            radius_surface_size = int(self.comm_radius * 2) + 4
             radius_surface = pygame.Surface((radius_surface_size, radius_surface_size), pygame.SRCALPHA)
             arc_center_x = radius_surface_size // 2
             arc_center_y = radius_surface_size // 2
             center_point_on_surface = (arc_center_x, arc_center_y)
 
-            # Calculate angles in standard math radians (0=right, counter-clockwise)
             total_arc_angle_rad = math.radians(STATION_COMM_ANGLE_DEG)
             angle_start_math = self.base_angle_rad - total_arc_angle_rad / 2
-            angle_end_math = self.base_angle_rad + total_arc_angle_rad / 2 # Might wrap around 2*pi
+            angle_end_math = self.base_angle_rad + total_arc_angle_rad / 2 
 
             # Calculate points for the polygon
-            polygon_points = [center_point_on_surface] # Start polygon at the center
+            polygon_points = [center_point_on_surface] 
             num_segments = STATION_ARC_POLYGON_SEGMENTS
             angle_step = total_arc_angle_rad / num_segments
 
-            for i in range(num_segments + 1): # Include the last point
+            for i in range(num_segments + 1):
                 current_math_angle = angle_start_math + i * angle_step
                 px = arc_center_x + self.comm_radius * math.cos(current_math_angle)
-                # Pygame Y is inverted relative to standard math sin, but surface coords start at 0,0 top-left
-                # So positive sin result means further down the surface, which is correct.
                 py = arc_center_y + self.comm_radius * math.sin(current_math_angle)
                 polygon_points.append((int(px), int(py)))
 
-            # Ensure polygon has at least 3 points (center + 2 arc points)
             if len(polygon_points) >= 3:
                 try:
                     pygame.draw.polygon(radius_surface, radius_color, polygon_points)
                 except Exception as e:
-                    # Can potentially fail if points are collinear or radius is tiny
-                    print(f"Warning: Could not draw polygon for station {self.id} - {e}")
+                    print(f"Warning: Could not draw polygon for station {self.id} - {e}")        
+            dash_length = 6
+            gap_length = 4
+            outline_color = (20, 70, 20)  # Light green dashed line
 
+            for i in range(1, len(polygon_points) - 1):
+                if i % 2 == 0: 
+                    start = polygon_points[i]
+                    end = polygon_points[i + 1]
+                    pygame.draw.line(radius_surface, outline_color, start, end, 3)
 
-            # Position the top-left of the arc surface so the arc *center* aligns with station pos
             arc_blit_pos = (int(self.x - arc_center_x), int(self.y - arc_center_y))
             screen_surface.blit(radius_surface, arc_blit_pos)
-        # --- End of Shaded Polygon Arc ---
 
-
-        # --- Draw Station Body (same as before) ---
-        self.surface.fill((0, 0, 0, 0)) # Clear previous drawing
+        self.surface.fill((0, 0, 0, 0)) 
         body_width, body_height = 10, 10
         body_rect = pygame.Rect((self.size // 2) - body_width // 2, (self.size // 2) - body_height // 2, body_width, body_height)
         body_color = STATION_SELECTED_COLOR if is_selected else STATION_COLOR
@@ -321,7 +302,7 @@ class Station:
         angle_diff_end = normalize_angle_diff(angle_to_sat, end_angle)
         arc_width_check = normalize_angle_diff(end_angle, start_angle)
 
-        if arc_width_check >= 0: # Normal case (includes exactly 2pi)
+        if arc_width_check >= 0:
              # Check if angle is within the arc using normalized differences
              return angle_diff_start >= -1e-9 and angle_diff_end <= 1e-9 # Use tolerance for float comparison
         else: # Arc wraps around the -pi/pi boundary
@@ -352,11 +333,10 @@ class Station:
         self.comm_radius = max(MIN_STATION_COMM_RADIUS, min(self.comm_radius, MAX_STATION_COMM_RADIUS))
 
 
-# --- Lists ---
 satellites = []
 stations = []
 
-# --- Functions (create_satellite, add_random_station, find_closest_available_station) remain unchanged ---
+# Functions (create_satellite, add_random_station, find_closest_available_station) 
 def create_satellite(sat_type):
     orbit_radius = random.uniform(MIN_ORBIT_RADIUS, MAX_ORBIT_RADIUS)
     if sat_type == 'A': speed = random.uniform(MIN_SPEED_A, MAX_SPEED_A); color = SATELLITE_BLUE
@@ -397,7 +377,6 @@ def find_closest_available_station(satellite):
 
 # --- Buttons ---
 class Button:
-    # (Button class remains the same)
     def __init__(self, x, y, width, height, text, action):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
@@ -462,7 +441,7 @@ while running:
                             selected_station.change_radius(STATION_RADIUS_CLICK_CHANGE)
                         else:
                             selected_station = new_selection
-                    elif not clicked_on_button: # Deselect if clicking empty space
+                    elif not clicked_on_button: 
                          selected_station = None
 
 
@@ -497,7 +476,7 @@ while running:
                          station_interacted_with = True # Count as interaction
 
 
-    # --- Update Logic (remains unchanged) ---
+    # --- Update Logic
     for sat in satellites:
         sat.update(current_ticks)
     satellites = [sat for sat in satellites if sat.status != 'destroyed']
@@ -516,20 +495,16 @@ while running:
     screen.fill(DARK_SPACE)
     for x, y, r in stars: pygame.draw.circle(screen, STAR_COLOR, (int(x), int(y)), int(r))
 
-    # Draw Earth
     if earth_image:
         earth_rect = earth_image.get_rect(center=EARTH_POSITION)
         screen.blit(earth_image, earth_rect)
     else:
         pygame.draw.circle(screen, (0, 80, 180), EARTH_POSITION, EARTH_RADIUS)
 
-    # Draw Stations (Range Polygon + Body)
-    # Draw ranges first (underneath stations)
     for station in stations:
         is_selected = (station == selected_station)
-        station.draw(screen, is_selected) # Combined drawing method
+        station.draw(screen, is_selected)
 
-    # Draw Satellites (Realistic fallback + Connection Lines)
     for sat in satellites:
         sat.draw(screen)
 
@@ -552,11 +527,9 @@ while running:
     button2.draw(screen)
     button_add_station.draw(screen)
 
-    # --- Display Update ---
     pygame.display.flip()
     clock.tick(60)
 
-# --- Cleanup ---
 for station in stations:
     station.disconnect_all()
 pygame.quit()
