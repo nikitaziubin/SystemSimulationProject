@@ -4,7 +4,7 @@ from config import *
 from satellite import *
 from station import *
 import math
-import os  
+import os
 
 
 pygame.init()
@@ -15,7 +15,7 @@ info_font = pygame.font.SysFont(None, 22)
 button_font = pygame.font.SysFont(None, 24)
 capacity_font = pygame.font.SysFont(None, 18)
 selected_station = None
-
+delta_time = clock.tick(60)
 
 satellites = []
 stations = []
@@ -160,7 +160,7 @@ while running:
 
     # --- Update Logic  
     for sat in satellites:
-        sat.update(current_ticks, stations)
+        sat.update(current_ticks, stations, delta_time)
     satellites = [sat for sat in satellites if sat.status != 'destroyed']
     for station in stations:
         for sat in list(station.connected_satellites):

@@ -17,8 +17,15 @@ class Satellite:
         self.blink_start_time = 0
         self.blink_on = False
         self.connected_to = None
+        if color == SATELLITE_GREEN:
+            self.data_amount = 70.0
+        elif color == SATELLITE_BLUE:
+            self.data_amount = 30.0
+        self.transfer_rate = 0.5  
+        self.transferring = False
 
-    def update(self, current_ticks, stations):
+
+    def update(self, current_ticks, stations, delta_time):
         if self.connected_to and (self.status != 'operational' or self.connected_to not in stations):
              if self.connected_to in stations:
                  self.connected_to.disconnect_satellite(self)
@@ -29,13 +36,29 @@ class Satellite:
             self.angle %= 2 * math.pi
             self.x = EARTH_POSITION[0] + self.orbit_radius * math.cos(self.angle)
             self.y = EARTH_POSITION[1] + self.orbit_radius * math.sin(self.angle)
-            if random.random() < SATELLITE_DAMAGE_PROBABILITY:
-                self.status = 'damaging'
-                self.is_blinking = True
-                self.blink_start_time = current_ticks
-                if self.connected_to:
+
+            if self.connected_to:
+                self.transferring = True
+                transferred = self.transfer_rate * (delta_time / 1000)
+                transferred = min(transferred, self.data_amount)
+                self.data_amount -= transferred
+                self.connected_to.receive_data(transferred)
+
+                if self.data_amount <= 0:
                     self.connected_to.disconnect_satellite(self)
                     self.connected_to = None
+                    self.transferring = False
+                else:
+                    self.transferring = False
+
+                if random.random() < SATELLITE_DAMAGE_PROBABILITY:
+                    self.status = 'damaging'
+                    self.is_blinking = True
+                    self.blink_start_time = current_ticks
+                    if self.connected_to:
+                        self.connected_to.disconnect_satellite(self)
+                        self.connected_to = None
+                    self.transferring = False
 
         elif self.status == 'damaging':
             elapsed_blink_time = current_ticks - self.blink_start_time
@@ -59,8 +82,12 @@ class Satellite:
         current_body_color = self.initial_color # Start with operational color
         if self.status == 'damaging':
             current_body_color = BLINK_RED if self.blink_on else DAMAGED_SATELLITE_COLOR
-        elif self.status == 'operational':
-             current_body_color = self.initial_color # Use its assigned color (Blue or Green)
+        if self.status == 'operational':
+            if self.transferring:
+                current_body_color = BLINK_RED if pygame.time.get_ticks() // 300 % 2 == 0 else self.initial_color
+            else:
+                current_body_color = self.initial_color
+
 
         # Draw the central body
         pygame.draw.circle(surface, current_body_color, (x, y), body_radius)
@@ -93,3 +120,8 @@ class Satellite:
         if self.connected_to:
              pygame.draw.line(surface, COMM_LINE_COLOR, (x, y),
                               (int(self.connected_to.x), int(self.connected_to.y)), 1)
+        # Show remaining data
+        if self.status != 'destroyed':
+            data_text = f"{int(self.data_amount)} GB"
+            data_surface = pygame.font.SysFont(None, 18).render(data_text, True, WHITE)
+            surface.blit(data_surface, (x + 10, y - 10))

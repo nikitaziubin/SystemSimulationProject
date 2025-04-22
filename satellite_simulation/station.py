@@ -2,7 +2,6 @@ import pygame
 import math
 from config import *
 
-
 class Station:
     _id_counter = 0
 
@@ -16,10 +15,15 @@ class Station:
         self.surface = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
         self.capacity = STATION_MAX_CAPACITY
         self.connected_satellites = []
+        self.received_data = 0.0
+        self.max_data_capacity = 500.0 
 
         dx = self.x - EARTH_POSITION[0]
         dy = self.y - EARTH_POSITION[1]
         self.base_angle_rad = math.atan2(dy, dx)
+
+    def receive_data(self, amount):
+                self.received_data = min(self.received_data + amount, self.max_data_capacity)
 
 
     def draw(self, screen_surface, is_selected, capacity_font):
@@ -89,6 +93,10 @@ class Station:
         capacity_surface = capacity_font.render(capacity_text, True, cap_color)
         capacity_pos = (blit_pos[0] + self.size // 2 - capacity_surface.get_width() // 2, blit_pos[1] + self.size + 2)
         screen_surface.blit(capacity_surface, capacity_pos)
+        data_text = f"Data: {int(self.received_data)} GB"
+        data_surface = capacity_font.render(data_text, True, WHITE)
+        screen_surface.blit(data_surface, (blit_pos[0], blit_pos[1] + self.size + 18))
+
 
 
     # --- Other Station methods (is_near, is_satellite_in_range, etc.) remain unchanged ---
