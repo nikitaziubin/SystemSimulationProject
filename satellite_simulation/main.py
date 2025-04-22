@@ -161,7 +161,13 @@ while running:
     # --- Update Logic  
     for sat in satellites:
         sat.update(current_ticks, stations, delta_time)
+
+    for station in stations:
+        station.update(current_ticks)
+
+
     satellites = [sat for sat in satellites if sat.status != 'destroyed']
+
     for station in stations:
         for sat in list(station.connected_satellites):
             if not station.is_satellite_in_range(sat):

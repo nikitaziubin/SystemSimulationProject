@@ -10,7 +10,7 @@ class Station:
         Station._id_counter += 1
         self.x = x
         self.y = y
-        self.comm_radius = random.randint(MIN_STATION_COMM_RADIUS + 20, 120)
+        self.comm_radius = 250
         self.size = 25
         self.surface = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
         self.capacity = STATION_MAX_CAPACITY
@@ -18,12 +18,18 @@ class Station:
         self.received_data = 0.0
         self.max_data_capacity = 500.0 
 
+        self.status = 'operational'
+        self.damage_start_time = 0
+        self.stored_data = 0.0  
+
         dx = self.x - EARTH_POSITION[0]
         dy = self.y - EARTH_POSITION[1]
         self.base_angle_rad = math.atan2(dy, dx)
 
     def receive_data(self, amount):
-                self.received_data = min(self.received_data + amount, self.max_data_capacity)
+        if self.status == 'damaged':
+            return
+        self.received_data = min(self.received_data + amount, self.max_data_capacity)
 
 
     def draw(self, screen_surface, is_selected, capacity_font):
@@ -77,7 +83,10 @@ class Station:
         self.surface.fill((0, 0, 0, 0)) 
         body_width, body_height = 10, 10
         body_rect = pygame.Rect((self.size // 2) - body_width // 2, (self.size // 2) - body_height // 2, body_width, body_height)
-        body_color = STATION_SELECTED_COLOR if is_selected else STATION_COLOR
+        if self.status == 'damaged':
+            body_color = (180, 60, 60)
+        else:
+            body_color = STATION_SELECTED_COLOR if is_selected else STATION_COLOR
         pygame.draw.rect(self.surface, body_color, body_rect)
         antenna_pos = (self.size // 2, self.size // 2 - body_height // 2 - 2)
         pygame.draw.circle(self.surface, WHITE, antenna_pos, 3)
@@ -91,12 +100,34 @@ class Station:
         capacity_text = f"{len(self.connected_satellites)}/{self.capacity}"
         cap_color = CAPACITY_NORMAL_COLOR if len(self.connected_satellites) < self.capacity else CAPACITY_FULL_COLOR
         capacity_surface = capacity_font.render(capacity_text, True, cap_color)
+
+        #data_text = f"{self.stored_data:.1f} GB"
+        #data_surface = capacity_font.render(data_text, True, WHITE if self.status == 'operational' else BLINK_RED)
+        #screen_surface.blit(data_surface, (blit_pos[0] + self.size // 2 - data_surface.get_width() // 2, blit_pos[1] + self.size + 20))
+
         capacity_pos = (blit_pos[0] + self.size // 2 - capacity_surface.get_width() // 2, blit_pos[1] + self.size + 2)
         screen_surface.blit(capacity_surface, capacity_pos)
         data_text = f"Data: {int(self.received_data)} GB"
         data_surface = capacity_font.render(data_text, True, WHITE)
-        screen_surface.blit(data_surface, (blit_pos[0], blit_pos[1] + self.size + 18))
+        data_pos = (blit_pos[0] + self.size // 2 - data_surface.get_width() // 2, blit_pos[1] + self.size + 30)
 
+        screen_surface.blit(data_surface, data_pos)
+    
+
+    def update(self, current_ticks):
+        if self.status == 'operational' and random.random() < STATION_DAMAGE_PROBABILITY:
+            self.status = 'damaged'
+            self.damage_start_time = current_ticks
+            self.disconnect_all()
+            print(f"Station {self.id} damaged!")
+
+        elif self.status == 'damaged':
+            if current_ticks - self.damage_start_time > STATION_REPAIR_TIME_MS:
+                self.status = 'operational'
+            
+                lost_data = self.received_data / STATION_DATA_LOSS_ON_REPAIR
+                self.received_data -= lost_data
+                print(f"Station {self.id} repaired, lost {lost_data:.1f} GB")
 
 
     # --- Other Station methods (is_near, is_satellite_in_range, etc.) remain unchanged ---
@@ -138,6 +169,9 @@ class Station:
         return len(self.connected_satellites) < self.capacity
 
     def connect_satellite(self, satellite):
+        if self.status == 'damaged':
+            return False
+
         if self.can_connect() and satellite not in self.connected_satellites and satellite.status == 'operational':
             self.connected_satellites.append(satellite)
             satellite.connected_to = self
