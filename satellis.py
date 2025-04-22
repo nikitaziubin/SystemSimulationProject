@@ -7,11 +7,12 @@ pygame.init()
 
 #Todo: Add capacity for station: max 3
 #Todo: Add that the radius of the station will be not a circle but the Half of the circle
-#Todo: Add visualization as in the papa project
+#Todo: Add visualization as in the papa projectD
+
 
 WIDTH, HEIGHT = 1200, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Interactive Satellite Simulation v5 - Enhanced Visuals") # Updated caption
+pygame.display.set_caption("Interactive Satellite Simulation v5 - Enhanced Visuals")
 clock = pygame.time.Clock()
 
 BLACK = (0, 0, 0)
@@ -90,6 +91,7 @@ except pygame.error as e:
     earth_image = None
 
 selected_station = None
+
 
 class Satellite:
     def __init__(self, orbit_radius, speed, color):
@@ -474,7 +476,7 @@ while running:
                          station_interacted_with = True # Count as interaction
 
 
-    # --- Update Logic
+    # --- Update Logic  
     for sat in satellites:
         sat.update(current_ticks)
     satellites = [sat for sat in satellites if sat.status != 'destroyed']
