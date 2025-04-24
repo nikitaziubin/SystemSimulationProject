@@ -1,6 +1,7 @@
 import pygame
 import math
 from config import *
+import time
 
 class Station:
     _id_counter = 0
@@ -25,6 +26,7 @@ class Station:
         dx = self.x - EARTH_POSITION[0]
         dy = self.y - EARTH_POSITION[1]
         self.base_angle_rad = math.atan2(dy, dx)
+        self.damage_log = []
 
     def receive_data(self, amount):
         if self.status == 'damaged':
@@ -118,13 +120,15 @@ class Station:
         if self.status == 'operational' and random.random() < STATION_DAMAGE_PROBABILITY:
             self.status = 'damaged'
             self.damage_start_time = current_ticks
+            self.damage_log.append([time.time(), None])  # Record start
+
             self.disconnect_all()
             print(f"Station {self.id} damaged!")
 
         elif self.status == 'damaged':
             if current_ticks - self.damage_start_time > STATION_REPAIR_TIME_MS:
                 self.status = 'operational'
-            
+                self.damage_log[-1][1] = time.time()  # Record repair time
                 lost_data = self.received_data / STATION_DATA_LOSS_ON_REPAIR
                 self.received_data -= lost_data
                 print(f"Station {self.id} repaired, lost {lost_data:.1f} GB")

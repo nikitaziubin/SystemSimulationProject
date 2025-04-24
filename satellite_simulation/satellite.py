@@ -2,8 +2,10 @@ import random
 import pygame
 import math
 from config import *
+import time
 
 class Satellite:
+    destroyed_satellites_log = [] 
     def __init__(self, orbit_radius, speed, color):
         self.orbit_radius = orbit_radius
         self.speed = speed
@@ -23,6 +25,8 @@ class Satellite:
             self.data_amount = 30.0
         self.transfer_rate = 0.5  
         self.transferring = False
+        self.destroyed_time = None
+
 
 
     def update(self, current_ticks, stations, delta_time):
@@ -65,6 +69,8 @@ class Satellite:
             if elapsed_blink_time > BLINK_DURATION_MS:
                 self.status = 'destroyed'
                 self.is_blinking = False
+                self.destroyed_time = time.time()
+                Satellite.destroyed_satellites_log.append(self)
             else:
                 self.blink_on = (elapsed_blink_time // BLINK_INTERVAL_MS) % 2 == 0
 

@@ -1,10 +1,16 @@
 import pygame
 import random
+import time
 from config import *
 from satellite import *
 from station import *
+from inputbox import InputBox
+from button import Button
+from startsimulation import show_simulation_popup, start_simulation
 import math
-import os
+from satellite import Satellite
+from station import Station
+import json
 
 
 pygame.init()
@@ -12,13 +18,15 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 24)
 info_font = pygame.font.SysFont(None, 22)
-button_font = pygame.font.SysFont(None, 24)
 capacity_font = pygame.font.SysFont(None, 18)
 selected_station = None
 delta_time = clock.tick(60)
 
 satellites = []
 stations = []
+
+simulation_end_time = None  # Global variable to track end time
+simulation_running = False
 
 # Functions (create_satellite, add_random_station, find_closest_available_station) 
 def create_satellite(sat_type):
@@ -59,33 +67,54 @@ def find_closest_available_station(satellite):
                 best_station = station
     return best_station
 
+def on_start_simulation_click():
+    global simulation_end_time, simulation_running
+    params = show_simulation_popup()
+    if params:
+        simulation_end_time = start_simulation(satellites, stations, disable_manual_controls, params)
+        simulation_running = True
+
+def generate_report(satellites, stations):
+    total_data = sum(station.received_data for station in stations)
+    lost_data = sum((entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR) for station in stations for entry in station.damage_log if entry[1])
+
+    with open("simulation_results.txt", "w") as file:
+        file.write(f"Simulation Report\n")
+        file.write(f"=====================\n")
+        file.write(f"Total Data Transferred to Stations: {total_data:.2f} GB\n")
+        file.write(f"Estimated Data Lost: {lost_data:.2f} GB\n")
+        file.write("\n")
+
+        file.write("Destroyed Satellites:\n")
+        for i, sat in enumerate(Satellite.destroyed_satellites_log):
+            file.write(f" {i+1}. Destroyed at {time.ctime(sat.destroyed_time)} | Position: ({sat.x:.1f}, {sat.y:.1f})\n")
+
+        file.write("\nDamaged Stations Timeline:\n")
+        for station in stations:
+            for entry in station.damage_log:
+                damage_time = time.ctime(entry[0])
+                if entry[1]:
+                    repair_time = time.ctime(entry[1])
+                    data_loss = entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR
+                    file.write(f" Station {station.id}: Damaged at {damage_time}, Repaired at {repair_time}, Lost {data_loss:.2f} GB\n")
+                else:
+                    file.write(f" Station {station.id}: Damaged at {damage_time}, Not yet repaired\n")
+
+    print("Report written to simulation_results.txt")
+
+
 # --- Buttons ---
-class Button:
-    def __init__(self, x, y, width, height, text, action):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.text = text
-        self.action = action
-        self.color = (200, 200, 200)
-        self.hover_color = (230, 230, 230)
-        self.text_color = (0, 0, 0)
-
-    def draw(self, surface):
-        current_color = self.hover_color if self.is_hovered() else self.color
-        pygame.draw.rect(surface, current_color, self.rect, border_radius=5)
-        text_surface = button_font.render(self.text, True, self.text_color)
-        surface.blit(text_surface, (self.rect.x + (self.rect.width - text_surface.get_width()) // 2,
-                                     self.rect.y + (self.rect.height - text_surface.get_height()) // 2))
-
-    def is_hovered(self):
-        return self.rect.collidepoint(pygame.mouse.get_pos())
-
-    def handle_click(self):
-        if self.is_hovered():
-            self.action()
-
 button1 = Button(20, 20, 250, 40, "Create Satellite Type A (Blue)", lambda: create_satellite('A'))
 button2 = Button(20, 70, 250, 40, "Create Satellite Type B (Green)", lambda: create_satellite('B'))
 button_add_station = Button(20, 120, 250, 40, "Add Random Station", add_random_station)
+button_start_simulation = Button(20, 170, 250, 40, "Start Simulation", on_start_simulation_click)
+
+
+manual_controls_enabled = True
+def disable_manual_controls():
+    global manual_controls_enabled
+    manual_controls_enabled = False
+
 
 running = True
 while running:
@@ -97,15 +126,21 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
-            clicked_on_button = button1.is_hovered() or button2.is_hovered() or button_add_station.is_hovered()
+            clicked_on_button = (
+            button1.is_hovered() or
+            button2.is_hovered() or
+            button_add_station.is_hovered() or
+            button_start_simulation.is_hovered())
+
             station_interacted_with = False # Reset interaction flag
 
             # Left Click
             if event.button == 1:
-                if clicked_on_button:
+                if clicked_on_button and manual_controls_enabled:
                     button1.handle_click()
                     button2.handle_click()
                     button_add_station.handle_click()
+                    button_start_simulation.handle_click()
                     station_interacted_with = True
                 else:
                     # Station selection/radius increase logic
@@ -213,6 +248,26 @@ while running:
     button1.draw(screen)
     button2.draw(screen)
     button_add_station.draw(screen)
+    button_start_simulation.draw(screen)
+
+    # Show simulation timer if active
+    if simulation_running and simulation_end_time:
+        remaining_seconds = max(0, int(simulation_end_time - time.time()))
+        minutes = remaining_seconds // 60
+        seconds = remaining_seconds % 60
+        timer_text = f"Time Left: {minutes:02d}:{seconds:02d}"
+        timer_surface = info_font.render(timer_text, True, YELLOW)
+        screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
+
+        if remaining_seconds <= 0:
+            simulation_running = False
+            generate_report(satellites, stations)
+
+            manual_controls_enabled = True
+            satellites.clear()
+            stations.clear()
+            selected_station = None
+            print("Simulation finished and elements cleared.")
 
     pygame.display.flip()
     clock.tick(60)
