@@ -172,8 +172,16 @@ while running:
         for sat in list(station.connected_satellites):
             if not station.is_satellite_in_range(sat):
                 station.disconnect_satellite(sat)
+    # Prioritize Green Satellites (Type B)
     for sat in satellites:
-        if sat.status == 'operational' and not sat.connected_to:
+        if sat.status == 'operational' and not sat.connected_to and sat.color == SATELLITE_GREEN:
+            best_station = find_closest_available_station(sat)
+            if best_station:
+                best_station.connect_satellite(sat)
+
+    # Then connect Blue Satellites (Type A)
+    for sat in satellites:
+        if sat.status == 'operational' and not sat.connected_to and sat.color == SATELLITE_BLUE:
             best_station = find_closest_available_station(sat)
             if best_station:
                 best_station.connect_satellite(sat)
