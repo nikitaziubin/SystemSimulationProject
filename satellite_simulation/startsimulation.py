@@ -7,15 +7,18 @@ import time
 from inputbox import InputBox
 from button import Button
 
+#pygame.init()
+FONT = pygame.font.Font(None, 26)
+screen = pygame.display.set_mode((800, 700))
+clock = pygame.time.Clock()
+scroll_offset = 0
+scroll_speed = 20
 
 
 def start_simulation(satellites, stations, disable_manual_controls_callback, params):
-    num_green = int(params["green"])
-    num_blue = int(params["blue"])
     num_stations = int(params["stations"])
     duration_minutes = int(params["duration"])
     duration_seconds = int(params["duration_seconds"])
-
 
     # Disable manual controls
     disable_manual_controls_callback()
@@ -27,34 +30,31 @@ def start_simulation(satellites, stations, disable_manual_controls_callback, par
         y = EARTH_POSITION[1] + EARTH_RADIUS * math.sin(angle)
         stations.append(Station(x, y))
 
-    # Create satellites
-    for _ in range(num_green):
-        orbit_radius = random.uniform(MIN_ORBIT_RADIUS, MAX_ORBIT_RADIUS)
-        speed = random.uniform(MIN_SPEED_B, MAX_SPEED_B)
-        satellites.append(Satellite(orbit_radius, speed, SATELLITE_GREEN))
-
-    for _ in range(num_blue):
-        orbit_radius = random.uniform(MIN_ORBIT_RADIUS, MAX_ORBIT_RADIUS)
-        speed = random.uniform(MIN_SPEED_A, MAX_SPEED_A)
-        satellites.append(Satellite(orbit_radius, speed, SATELLITE_BLUE))
+    # Create satellites from custom configs
+    if "custom_satellites" in params:
+        for orbit_radius, speed, color in params["custom_satellites"]:
+            satellites.append(Satellite(orbit_radius, speed, color))
 
     # Store simulation start time
     start_time = time.time()
     simulation_end_time = start_time + (duration_minutes * 60 + duration_seconds)
 
-    return simulation_end_time 
+    return simulation_end_time
 
 
 
 def show_simulation_popup():
     input_boxes = [
-        InputBox(100, 100, 140, 32, "Green Satellites:", "5"),
-        InputBox(100, 160, 140, 32, "Blue Satellites:", "5"),
-        InputBox(100, 220, 140, 32, "Stations:", "3"),
+        InputBox(100, 100, 140, 32, "Green Satellites:", "0"),
+        InputBox(100, 160, 140, 32, "Blue Satellites:", "0"),
+        InputBox(100, 220, 140, 32, "Stations:", "0"),
         InputBox(100, 280, 140, 32, "Duration (min):", "0"),
-        InputBox(100, 340, 140, 32, "Duration (sec):", "30")]
+        InputBox(100, 340, 140, 32, "Duration (sec):", "30")
+    ]
 
-    confirmed = False 
+    satellite_configs = []
+    scroll_offset = 0
+    confirmed = False
     cancelled = False
 
     def confirm():
@@ -62,11 +62,12 @@ def show_simulation_popup():
         confirmed = True
 
     def cancel():
-            nonlocal cancelled
-            cancelled = True
+        nonlocal cancelled
+        cancelled = True
 
     ok_button = Button(100, 400, 140, 40, "Start", confirm)
     back_button = Button(260, 400, 140, 40, "Back", cancel)
+    add_sat_button = Button(500, 40, 140, 35, "Add Satellite", lambda: satellite_configs.append(SatelliteConfig(500, 0)))
 
     popup_running = True
 
@@ -77,6 +78,7 @@ def show_simulation_popup():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if ok_button.is_hovered():
                     confirm()
@@ -84,29 +86,93 @@ def show_simulation_popup():
                 elif back_button.is_hovered():
                     cancel()
                     popup_running = False
+                elif add_sat_button.is_hovered():
+                    add_sat_button.handle_click()
+
+            elif event.type == pygame.MOUSEWHEEL:
+                scroll_offset += event.y * 20  # Scroll speed
 
             for box in input_boxes:
                 box.handle_event(event)
 
+            for i, config in enumerate(satellite_configs):
+                config.handle_event(event, scroll_offset, base_y=100 + i * 80)
+
+        # Draw elements
         for box in input_boxes:
             box.draw(screen)
 
         ok_button.draw(screen)
         back_button.draw(screen)
+        add_sat_button.draw(screen)
+
+        for i, config in enumerate(satellite_configs):
+            config.draw(screen, scroll_offset, base_y=100 + i * 80)
 
         pygame.display.flip()
         clock.tick(30)
 
     if cancelled:
         return None
-    
+
     simulation_params = {
         "green": input_boxes[0].get_value(),
         "blue": input_boxes[1].get_value(),
         "stations": input_boxes[2].get_value(),
         "duration": input_boxes[3].get_value(),
-        "duration_seconds": input_boxes[4].get_value()
+        "duration_seconds": input_boxes[4].get_value(),
+        "custom_satellites": [cfg.get_values() for cfg in satellite_configs]
     }
 
     print("Simulation parameters:", simulation_params)
     return simulation_params
+
+
+class SatelliteConfig:
+    def __init__(self, x, y):
+        self.base_x = x
+        self.base_y = y
+        self.orbit_box = InputBox(x, y, 100, 30, "Orbit Radius", "200", is_float=True)
+        self.speed_box = InputBox(x + 110, y, 100, 30, "Speed", "0.002", is_float=True)
+        self.color_options = ["Green", "Blue"]
+        self.selected_color_index = 0
+        self.dropdown_rect = pygame.Rect(x + 220, y, 100, 30)
+
+    def handle_event(self, event, scroll_offset, base_y):
+        y = base_y + scroll_offset
+        self.orbit_box.rect.y = y
+        self.speed_box.rect.y = y
+        self.dropdown_rect.y = y
+
+        self.orbit_box.handle_event(event)
+        self.speed_box.handle_event(event)
+
+        if event.type == pygame.MOUSEBUTTONDOWN and self.dropdown_rect.collidepoint(event.pos):
+            self.selected_color_index = (self.selected_color_index + 1) % len(self.color_options)
+
+    def draw(self, screen, scroll_offset, base_y):
+        y = base_y + scroll_offset
+        self.orbit_box.rect.y = y
+        self.speed_box.rect.y = y
+        self.dropdown_rect.y = y
+
+        # Draw labels
+        orbit_label = FONT.render("Radius           Speed", True, pygame.Color('white'))
+        speed_label = FONT.render("                      Color", True, pygame.Color('white'))
+
+        screen.blit(orbit_label, (self.orbit_box.rect.x, self.orbit_box.rect.y - 20))
+        screen.blit(speed_label, (self.speed_box.rect.x, self.speed_box.rect.y - 20))
+
+        # Draw input boxes and dropdown
+        self.orbit_box.draw(screen)
+        self.speed_box.draw(screen)
+        pygame.draw.rect(screen, pygame.Color('gray'), self.dropdown_rect, 2)
+        color_label = FONT.render(self.color_options[self.selected_color_index], True, pygame.Color('white'))
+        screen.blit(color_label, (self.dropdown_rect.x + 5, self.dropdown_rect.y + 5))
+
+
+    def get_values(self):
+        orbit = self.orbit_box.get_value()
+        speed = self.speed_box.get_value()
+        color = SATELLITE_GREEN if self.color_options[self.selected_color_index] == "Green" else SATELLITE_BLUE
+        return orbit, speed, color
