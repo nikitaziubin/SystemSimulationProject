@@ -128,9 +128,13 @@ class Station:
         elif self.status == 'damaged':
             if current_ticks - self.damage_start_time > STATION_REPAIR_TIME_MS:
                 self.status = 'operational'
-                self.damage_log[-1][1] = time.time()  # Record repair time
+
                 lost_data = self.received_data / STATION_DATA_LOSS_ON_REPAIR
                 self.received_data -= lost_data
+
+                self.damage_log[-1][1] = time.time()   # Repair time
+                self.damage_log[-1].append(lost_data)  
+
                 print(f"Station {self.id} repaired, lost {lost_data:.1f} GB")
 
 

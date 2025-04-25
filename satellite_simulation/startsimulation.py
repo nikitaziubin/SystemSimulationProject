@@ -1,4 +1,3 @@
-#from main import show_simulation_popup
 from satellite import Satellite
 from station import Station
 from config import *
@@ -55,13 +54,19 @@ def show_simulation_popup():
         InputBox(100, 280, 140, 32, "Duration (min):", "0"),
         InputBox(100, 340, 140, 32, "Duration (sec):", "30")]
 
-    confirmed = False  # Track whether the Start button was clicked
+    confirmed = False 
+    cancelled = False
 
     def confirm():
         nonlocal confirmed
         confirmed = True
 
+    def cancel():
+            nonlocal cancelled
+            cancelled = True
+
     ok_button = Button(100, 400, 140, 40, "Start", confirm)
+    back_button = Button(260, 400, 140, 40, "Back", cancel)
 
     popup_running = True
 
@@ -72,8 +77,14 @@ def show_simulation_popup():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-            if event.type == pygame.MOUSEBUTTONDOWN and ok_button.is_hovered():
-                popup_running = False  # Exit and continue simulation
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if ok_button.is_hovered():
+                    confirm()
+                    popup_running = False
+                elif back_button.is_hovered():
+                    cancel()
+                    popup_running = False
+
             for box in input_boxes:
                 box.handle_event(event)
 
@@ -81,11 +92,14 @@ def show_simulation_popup():
             box.draw(screen)
 
         ok_button.draw(screen)
+        back_button.draw(screen)
 
         pygame.display.flip()
         clock.tick(30)
 
-    # Retrieve values (you can return them or store them globally)
+    if cancelled:
+        return None
+    
     simulation_params = {
         "green": input_boxes[0].get_value(),
         "blue": input_boxes[1].get_value(),
