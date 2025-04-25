@@ -59,13 +59,28 @@ def add_random_station():
 def find_closest_available_station(satellite):
     best_station = None
     min_dist_sq = float('inf')
+
     for station in stations:
-        if station.can_connect() and station.is_satellite_in_range(satellite):
+        if station.is_satellite_in_range(satellite):
             dist_sq = (station.x - satellite.x)**2 + (station.y - satellite.y)**2
-            if dist_sq < min_dist_sq:
-                min_dist_sq = dist_sq
-                best_station = station
+
+            # If the station has free space
+            if station.can_connect():
+                if dist_sq < min_dist_sq:
+                    best_station = station
+                    min_dist_sq = dist_sq
+
+            # If satellite is green and the station is full but has a blue satellite
+            elif satellite.color == SATELLITE_GREEN:
+                for connected_sat in station.connected_satellites:
+                    if connected_sat.color == SATELLITE_BLUE:
+                        station.disconnect_satellite(connected_sat)
+                        if dist_sq < min_dist_sq:
+                            best_station = station
+                            min_dist_sq = dist_sq
+                        break  # Remove only one blue satellite per green
     return best_station
+
 
 def on_start_simulation_click():
     global simulation_end_time, simulation_running
