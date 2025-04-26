@@ -6,8 +6,9 @@ import time
 
 class Satellite:
     destroyed_satellites_log = [] 
-    def __init__(self, orbit_radius, speed, color):
+    def __init__(self, orbit_radius, speed, color, name="S"):
         self.orbit_radius = orbit_radius
+        self.name = name 
         self.speed = speed
         self.initial_color = color 
         self.color = color         
@@ -85,7 +86,7 @@ class Satellite:
         panel_width = 3
 
         # Determine current body color
-        current_body_color = self.initial_color # Start with operational color
+        current_body_color = self.initial_color 
         if self.status == 'damaging':
             current_body_color = BLINK_RED if self.blink_on else DAMAGED_SATELLITE_COLOR
         if self.status == 'operational':
@@ -94,40 +95,38 @@ class Satellite:
             else:
                 current_body_color = self.initial_color
 
-
         # Draw the central body
         pygame.draw.circle(surface, current_body_color, (x, y), body_radius)
 
-        # Determine panel color and if they should be drawn
-        draw_panels = True
-        panel_color = OPERATIONAL_PANEL_COLOR
-        if self.status == 'damaging':
-            if self.blink_on:
-                panel_color = BLINK_RED
-            else: 
-                panel_color = DAMAGED_PANEL_COLOR
+        # Draw the solar panels
+        panel_angle_rad = self.angle + math.pi / 2
 
-        if draw_panels:
-            panel_angle_rad = self.angle + math.pi / 2
+        p1_start_x = x + math.cos(panel_angle_rad) * body_radius
+        p1_start_y = y + math.sin(panel_angle_rad) * body_radius
+        p1_end_x = x + math.cos(panel_angle_rad) * (body_radius + panel_length)
+        p1_end_y = y + math.sin(panel_angle_rad) * (body_radius + panel_length)
 
-            p1_start_x = x + math.cos(panel_angle_rad) * body_radius
-            p1_start_y = y + math.sin(panel_angle_rad) * body_radius
-            p1_end_x = x + math.cos(panel_angle_rad) * (body_radius + panel_length)
-            p1_end_y = y + math.sin(panel_angle_rad) * (body_radius + panel_length)
+        p2_start_x = x - math.cos(panel_angle_rad) * body_radius
+        p2_start_y = y - math.sin(panel_angle_rad) * body_radius
+        p2_end_x = x - math.cos(panel_angle_rad) * (body_radius + panel_length)
+        p2_end_y = y - math.sin(panel_angle_rad) * (body_radius + panel_length)
 
-            p2_start_x = x - math.cos(panel_angle_rad) * body_radius
-            p2_start_y = y - math.sin(panel_angle_rad) * body_radius
-            p2_end_x = x - math.cos(panel_angle_rad) * (body_radius + panel_length)
-            p2_end_y = y - math.sin(panel_angle_rad) * (body_radius + panel_length)
+        pygame.draw.line(surface, OPERATIONAL_PANEL_COLOR, (int(p1_start_x), int(p1_start_y)), (int(p1_end_x), int(p1_end_y)), panel_width)
+        pygame.draw.line(surface, OPERATIONAL_PANEL_COLOR, (int(p2_start_x), int(p2_start_y)), (int(p2_end_x), int(p2_end_y)), panel_width)
 
-            pygame.draw.line(surface, panel_color, (int(p1_start_x), int(p1_start_y)), (int(p1_end_x), int(p1_end_y)), panel_width)
-            pygame.draw.line(surface, panel_color, (int(p2_start_x), int(p2_start_y)), (int(p2_end_x), int(p2_end_y)), panel_width)
-
+        # Draw connection line
         if self.connected_to:
-             pygame.draw.line(surface, COMM_LINE_COLOR, (x, y),
-                              (int(self.connected_to.x), int(self.connected_to.y)), 1)
-        # Show remaining data
+            pygame.draw.line(surface, COMM_LINE_COLOR, (x, y), (int(self.connected_to.x), int(self.connected_to.y)), 1)
+
+        # --- NEW PART: Draw Satellite Name inside body ---
+        if hasattr(self, "name"):
+            name_font = pygame.font.SysFont(None, 12)  # smaller font
+            name_surface = name_font.render(self.name, True, (0, 0, 0))  # black text inside
+            name_rect = name_surface.get_rect(center=(x, y))
+            surface.blit(name_surface, name_rect)
+
+        # --- Show Remaining Data outside body ---
         if self.status != 'destroyed':
             data_text = f"{int(self.data_amount)} GB"
             data_surface = pygame.font.SysFont(None, 18).render(data_text, True, WHITE)
-            surface.blit(data_surface, (x + 10, y - 10))
+            surface.blit(data_surface, (x + 12, y - 10))

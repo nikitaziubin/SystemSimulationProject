@@ -106,7 +106,10 @@ def stop_simulation():
 
 def generate_report(satellites, stations):
     total_data = sum(station.received_data for station in stations)
-    lost_data = sum((entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR) for station in stations for entry in station.damage_log if entry[1])
+    lost_data = sum(
+        (entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR)
+        for station in stations for entry in station.damage_log if entry[1]
+    )
 
     with open("simulation_results.txt", "w") as file:
         file.write(f"Simulation Report\n")
@@ -117,7 +120,8 @@ def generate_report(satellites, stations):
 
         file.write("Destroyed Satellites:\n")
         for i, sat in enumerate(Satellite.destroyed_satellites_log):
-            file.write(f" {i+1}. Destroyed at {time.ctime(sat.destroyed_time)} | Position: ({sat.x:.1f}, {sat.y:.1f})\n")
+            name = getattr(sat, "name", "Unknown")  # fallback if name missing
+            file.write(f" {i+1}. {name} Destroyed at {time.ctime(sat.destroyed_time)} | Position: ({sat.x:.1f}, {sat.y:.1f})\n")
 
         file.write("\nDamaged Stations Timeline:\n")
         for station in stations:
@@ -131,6 +135,7 @@ def generate_report(satellites, stations):
                     file.write(f" Station {station.id}: Damaged at {damage_time}, Not yet repaired\n")
 
     print("Report written to simulation_results.txt")
+
 
 
 # --- Buttons ---
@@ -293,6 +298,7 @@ while running:
          info_text = "LClick station icon to select/increase radius. LClick near Earth edge to add manually."
          info_surface = info_font.render(info_text, True, WHITE)
          screen.blit(info_surface, (WIDTH // 2 - info_surface.get_width() // 2, 15))
+
     # Draw Buttons
     button1.draw(screen)
     button2.draw(screen)
