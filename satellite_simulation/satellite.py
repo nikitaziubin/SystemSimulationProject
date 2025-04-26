@@ -7,7 +7,8 @@ import time
 class Satellite:
     destroyed_satellites_log = [] 
 
-    def __init__(self, orbit_radius, speed, color):
+    def __init__(self, orbit_radius, speed, color, name):
+        self.name = name
         self.orbit_radius = orbit_radius
         self.speed = speed
         self.initial_color = color
@@ -149,3 +150,8 @@ class Satellite:
             data_text = f"{int(self.data_amount)} GB"
             data_surface = pygame.font.SysFont(None, 18).render(data_text, True, WHITE)
             surface.blit(data_surface, (x + 10, y - 10))
+            name_font = pygame.font.SysFont(None, 15)
+            name_surface = name_font.render(self.name, True, WHITE)
+            name_rect = name_surface.get_rect(center=(x, y))
+            surface.blit(name_surface, name_rect)
+
