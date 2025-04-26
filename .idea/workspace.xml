@@ -5,9 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2ff47b3c-8cff-4efb-964d-6b3d42a43679" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/satellite_simulation/satellite.py" beforeDir="false" afterPath="$PROJECT_DIR$/satellite_simulation/satellite.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/satellite_simulation/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/satellite_simulation/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/satellite_simulation/simulation_results.txt" beforeDir="false" afterPath="$PROJECT_DIR$/satellite_simulation/simulation_results.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/satellite_simulation/startsimulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/satellite_simulation/startsimulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/satellite_simulation/station.py" beforeDir="false" afterPath="$PROJECT_DIR$/satellite_simulation/station.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/satellite_simulation/utils.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +46,7 @@
     "Python.satellis.executor": "Run",
     "Python.satellite.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Merging main",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -74,7 +76,7 @@
       <workItem from="1745342152372" duration="120000" />
       <workItem from="1745481358013" duration="2071000" />
       <workItem from="1745589252235" duration="519000" />
-      <workItem from="1745589790994" duration="5639000" />
+      <workItem from="1745589790994" duration="6380000" />
     </task>
     <servers />
   </component>

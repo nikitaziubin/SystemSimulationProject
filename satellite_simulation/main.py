@@ -39,6 +39,16 @@ def create_satellite(sat_type):
     satellites.append(Satellite(orbit_radius=orbit_radius, speed=speed, color=color))
     print(f"Created Type {sat_type} satellite with radius {orbit_radius:.0f}, speed {speed:.4f}")
 
+def delete_selected_station():
+    global selected_station
+    if selected_station in stations:
+        stations.remove(selected_station)
+        selected_station.disconnect_all()
+        print(f"Deleted Station ID {selected_station.id}")
+        selected_station = None
+    else:
+        print("No station selected to delete.")
+
 def add_random_station():
     max_attempts = 100
     for _ in range(max_attempts):
@@ -74,9 +84,32 @@ def on_start_simulation_click():
         simulation_end_time = start_simulation(satellites, stations, disable_manual_controls, params)
         simulation_running = True
 
+def terminate_simulation():
+    global simulation_running, manual_controls_enabled, selected_station, satellites, stations
+    print("Simulation was terminated by user.")
+    simulation_running = False
+    satellites.clear()
+    stations.clear()
+    selected_station = None
+    manual_controls_enabled = True
+
+def stop_simulation():
+    global simulation_running, manual_controls_enabled, selected_station, satellites, stations
+    generate_report(satellites, stations)
+    print("Simulation stopped and report generated.")
+    simulation_running = False
+    satellites.clear()
+    stations.clear()
+    selected_station = None
+    manual_controls_enabled = True
+
+
 def generate_report(satellites, stations):
     total_data = sum(station.received_data for station in stations)
-    lost_data = sum((entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR) for station in stations for entry in station.damage_log if entry[1])
+    lost_data = sum(
+        (entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR)
+        for station in stations for entry in station.damage_log if entry[1]
+    )
 
     with open("simulation_results.txt", "w") as file:
         file.write(f"Simulation Report\n")
@@ -87,7 +120,8 @@ def generate_report(satellites, stations):
 
         file.write("Destroyed Satellites:\n")
         for i, sat in enumerate(Satellite.destroyed_satellites_log):
-            file.write(f" {i+1}. Destroyed at {time.ctime(sat.destroyed_time)} | Position: ({sat.x:.1f}, {sat.y:.1f})\n")
+            name = getattr(sat, "name", "Unknown")  # fallback if name missing
+            file.write(f" {i+1}. {name} Destroyed at {time.ctime(sat.destroyed_time)} | Position: ({sat.x:.1f}, {sat.y:.1f})\n")
 
         file.write("\nDamaged Stations Timeline:\n")
         for station in stations:
@@ -103,14 +137,19 @@ def generate_report(satellites, stations):
     print("Report written to simulation_results.txt")
 
 
+
 # --- Buttons ---
 button1 = Button(20, 20, 250, 40, "Create Satellite Type A (Blue)", lambda: create_satellite('A'))
 button2 = Button(20, 70, 250, 40, "Create Satellite Type B (Green)", lambda: create_satellite('B'))
-button_add_station = Button(20, 120, 250, 40, "Add Random Station", add_random_station)
+button_delete_station = Button(20, 120, 250, 40, "Delete Selected Station", delete_selected_station)
 button_start_simulation = Button(20, 170, 250, 40, "Start Simulation", on_start_simulation_click)
+button_terminate_simulation = Button(WIDTH - 250, 60, 200, 40, "Terminate Simulation", None)
+button_stop_simulation = Button(WIDTH - 250, 110, 200, 40, "Stop Simulation", None)
 
-
+button_terminate_simulation.action = terminate_simulation
+button_stop_simulation.action = stop_simulation
 manual_controls_enabled = True
+
 def disable_manual_controls():
     global manual_controls_enabled
     manual_controls_enabled = False
@@ -127,19 +166,26 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
             clicked_on_button = (
-            button1.is_hovered() or
-            button2.is_hovered() or
-            button_add_station.is_hovered() or
-            button_start_simulation.is_hovered())
-
-            station_interacted_with = False # Reset interaction flag
+                button1.is_hovered() or
+                button2.is_hovered() or
+                button_delete_station.is_hovered() or
+                button_start_simulation.is_hovered() or
+                button_terminate_simulation.is_hovered() or
+                button_stop_simulation.is_hovered()
+            )
+            station_interacted_with = False
 
             # Left Click
             if event.button == 1:
+                if simulation_running:
+                    if button_terminate_simulation.is_hovered():
+                        button_terminate_simulation.handle_click()
+                    if button_stop_simulation.is_hovered():
+                        button_stop_simulation.handle_click()
                 if clicked_on_button and manual_controls_enabled:
                     button1.handle_click()
                     button2.handle_click()
-                    button_add_station.handle_click()
+                    button_delete_station.handle_click()
                     button_start_simulation.handle_click()
                     station_interacted_with = True
                 else:
@@ -252,11 +298,16 @@ while running:
          info_text = "LClick station icon to select/increase radius. LClick near Earth edge to add manually."
          info_surface = info_font.render(info_text, True, WHITE)
          screen.blit(info_surface, (WIDTH // 2 - info_surface.get_width() // 2, 15))
+
     # Draw Buttons
     button1.draw(screen)
     button2.draw(screen)
-    button_add_station.draw(screen)
+    button_delete_station.draw(screen)
     button_start_simulation.draw(screen)
+    if simulation_running:
+        button_terminate_simulation.draw(screen)
+        button_stop_simulation.draw(screen)
+
 
     # Show simulation timer if active
     if simulation_running and simulation_end_time:
