@@ -16,19 +16,10 @@ scroll_speed = 20
 
 
 def start_simulation(satellites, stations, disable_manual_controls_callback, params):
-    num_stations = int(params["stations"])
     duration_minutes = int(params["duration"])
     duration_seconds = int(params["duration_seconds"])
 
-    # Disable manual controls
     disable_manual_controls_callback()
-
-    # Create stations
-    for _ in range(num_stations):
-        angle = random.uniform(0, 2 * math.pi)
-        x = EARTH_POSITION[0] + EARTH_RADIUS * math.cos(angle)
-        y = EARTH_POSITION[1] + EARTH_RADIUS * math.sin(angle)
-        stations.append(Station(x, y))
 
     # Create satellites from custom configs
     if "custom_satellites" in params:
@@ -45,9 +36,9 @@ def start_simulation(satellites, stations, disable_manual_controls_callback, par
 
 def show_simulation_popup():
     input_boxes = [
-        InputBox(100, 100, 140, 32, "Green Satellites:", "0"),
-        InputBox(100, 160, 140, 32, "Blue Satellites:", "0"),
-        InputBox(100, 220, 140, 32, "Stations:", "0"),
+        #InputBox(100, 100, 140, 32, "Green Satellites:", "0"),
+        #InputBox(100, 160, 140, 32, "Blue Satellites:", "0"),
+        #InputBox(100, 220, 140, 32, "Stations:", "0"),
         InputBox(100, 280, 140, 32, "Duration (min):", "0"),
         InputBox(100, 340, 140, 32, "Duration (sec):", "30")
     ]
@@ -123,14 +114,10 @@ def show_simulation_popup():
         return None
 
     simulation_params = {
-        "green": input_boxes[0].get_value(),
-        "blue": input_boxes[1].get_value(),
-        "stations": input_boxes[2].get_value(),
-        "duration": input_boxes[3].get_value(),
-        "duration_seconds": input_boxes[4].get_value(),
-        "custom_satellites": [cfg.get_values() for cfg in satellite_configs]
-    }
-
+    "duration": input_boxes[0].get_value(),
+    "duration_seconds": input_boxes[1].get_value(),
+    "custom_satellites": [cfg.get_values() for cfg in satellite_configs]
+}
     print("Simulation parameters:", simulation_params)
     return simulation_params
 

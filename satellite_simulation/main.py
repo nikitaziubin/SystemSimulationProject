@@ -84,6 +84,26 @@ def on_start_simulation_click():
         simulation_end_time = start_simulation(satellites, stations, disable_manual_controls, params)
         simulation_running = True
 
+def terminate_simulation():
+    global simulation_running, manual_controls_enabled, selected_station, satellites, stations
+    print("Simulation was terminated by user.")
+    simulation_running = False
+    satellites.clear()
+    stations.clear()
+    selected_station = None
+    manual_controls_enabled = True
+
+def stop_simulation():
+    global simulation_running, manual_controls_enabled, selected_station, satellites, stations
+    generate_report(satellites, stations)
+    print("Simulation stopped and report generated.")
+    simulation_running = False
+    satellites.clear()
+    stations.clear()
+    selected_station = None
+    manual_controls_enabled = True
+
+
 def generate_report(satellites, stations):
     total_data = sum(station.received_data for station in stations)
     lost_data = sum((entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR) for station in stations for entry in station.damage_log if entry[1])
@@ -118,9 +138,13 @@ button1 = Button(20, 20, 250, 40, "Create Satellite Type A (Blue)", lambda: crea
 button2 = Button(20, 70, 250, 40, "Create Satellite Type B (Green)", lambda: create_satellite('B'))
 button_delete_station = Button(20, 120, 250, 40, "Delete Selected Station", delete_selected_station)
 button_start_simulation = Button(20, 170, 250, 40, "Start Simulation", on_start_simulation_click)
+button_terminate_simulation = Button(WIDTH - 250, 60, 200, 40, "Terminate Simulation", None)
+button_stop_simulation = Button(WIDTH - 250, 110, 200, 40, "Stop Simulation", None)
 
-
+button_terminate_simulation.action = terminate_simulation
+button_stop_simulation.action = stop_simulation
 manual_controls_enabled = True
+
 def disable_manual_controls():
     global manual_controls_enabled
     manual_controls_enabled = False
@@ -140,12 +164,19 @@ while running:
                 button1.is_hovered() or
                 button2.is_hovered() or
                 button_delete_station.is_hovered() or
-                button_start_simulation.is_hovered())
-
+                button_start_simulation.is_hovered() or
+                button_terminate_simulation.is_hovered() or
+                button_stop_simulation.is_hovered()
+            )
             station_interacted_with = False
 
             # Left Click
             if event.button == 1:
+                if simulation_running:
+                    if button_terminate_simulation.is_hovered():
+                        button_terminate_simulation.handle_click()
+                    if button_stop_simulation.is_hovered():
+                        button_stop_simulation.handle_click()
                 if clicked_on_button and manual_controls_enabled:
                     button1.handle_click()
                     button2.handle_click()
@@ -267,6 +298,10 @@ while running:
     button2.draw(screen)
     button_delete_station.draw(screen)
     button_start_simulation.draw(screen)
+    if simulation_running:
+        button_terminate_simulation.draw(screen)
+        button_stop_simulation.draw(screen)
+
 
     # Show simulation timer if active
     if simulation_running and simulation_end_time:

@@ -1,15 +1,9 @@
 Simulation Report
 =====================
-Total Data Transferred to Stations: 16.18 GB
-Estimated Data Lost: 20.76 GB
+Total Data Transferred to Stations: 6.33 GB
+Estimated Data Lost: 1.39 GB
 
 Destroyed Satellites:
- 1. Destroyed at Fri Apr 25 23:49:34 2025 | Position: (797.4, 482.0)
- 2. Destroyed at Fri Apr 25 23:49:38 2025 | Position: (799.8, 440.2)
 
 Damaged Stations Timeline:
- Station 0: Damaged at Fri Apr 25 23:49:27 2025, Repaired at Fri Apr 25 23:49:31 2025, Lost 7.45 GB
- Station 0: Damaged at Fri Apr 25 23:49:33 2025, Repaired at Fri Apr 25 23:49:37 2025, Lost 4.58 GB
- Station 0: Damaged at Fri Apr 25 23:49:40 2025, Not yet repaired
- Station 1: Damaged at Fri Apr 25 23:49:08 2025, Repaired at Fri Apr 25 23:49:15 2025, Lost 0.00 GB
- Station 1: Damaged at Fri Apr 25 23:49:37 2025, Repaired at Fri Apr 25 23:49:41 2025, Lost 8.73 GB
+ Station 0: Damaged at Sat Apr 26 11:18:10 2025, Repaired at Sat Apr 26 11:18:14 2025, Lost 1.39 GB
