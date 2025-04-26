@@ -90,13 +90,20 @@ def show_simulation_popup():
                     add_sat_button.handle_click()
 
             elif event.type == pygame.MOUSEWHEEL:
-                scroll_offset += event.y * 20  # Scroll speed
+                scroll_offset += event.y * 20
 
             for box in input_boxes:
                 box.handle_event(event)
 
             for i, config in enumerate(satellite_configs):
                 config.handle_event(event, scroll_offset, base_y=100 + i * 80)
+            to_remove = None
+            for config in satellite_configs:
+                if event.type == pygame.MOUSEBUTTONDOWN and config.remove_button.is_hovered():
+                    to_remove = config
+            if to_remove:
+                satellite_configs.remove(to_remove)
+
 
         # Draw elements
         for box in input_boxes:
@@ -137,12 +144,15 @@ class SatelliteConfig:
         self.color_options = ["Green", "Blue"]
         self.selected_color_index = 0
         self.dropdown_rect = pygame.Rect(x + 220, y, 100, 30)
+        self.remove_button = Button(x + 330, y, 30, 30, "X", None)  # 'X' button
+
 
     def handle_event(self, event, scroll_offset, base_y):
         y = base_y + scroll_offset
         self.orbit_box.rect.y = y
         self.speed_box.rect.y = y
         self.dropdown_rect.y = y
+        self.remove_button.rect.y = y 
 
         self.orbit_box.handle_event(event)
         self.speed_box.handle_event(event)
@@ -169,6 +179,8 @@ class SatelliteConfig:
         pygame.draw.rect(screen, pygame.Color('gray'), self.dropdown_rect, 2)
         color_label = FONT.render(self.color_options[self.selected_color_index], True, pygame.Color('white'))
         screen.blit(color_label, (self.dropdown_rect.x + 5, self.dropdown_rect.y + 5))
+        self.remove_button.draw(screen)
+
 
 
     def get_values(self):
