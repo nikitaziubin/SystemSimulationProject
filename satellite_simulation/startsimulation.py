@@ -25,6 +25,8 @@ def start_simulation(satellites, stations, disable_manual_controls_callback, par
 
     Station.station_damage_probability = damage_probability
     Station.station_repair_time_ms = recovery_time_seconds * 1000 
+    Satellite.satellite_damage_probability = float(params.get("satellite_damage_probability", 0.001))
+    Satellite.satellite_repair_time_seconds = float(params.get("satellite_recovery_time_seconds", 5))
 
     if "custom_satellites" in params:
         for name, orbit_radius, speed, color in params["custom_satellites"]:
@@ -39,11 +41,12 @@ def show_simulation_popup():
     satellite_name_counter = 1
 
     input_boxes = [
-        InputBox(100, 160, 140, 32, "Recover Station Time (sec):", "5", is_float=True),
-        InputBox(100, 220, 140, 32, "Damage Station Prob (%):", "1", is_float=True),
-        InputBox(100, 280, 140, 32, "Duration (min):", "0"),
-        InputBox(100, 340, 140, 32, "Duration (sec):", "30")
-    ]
+        InputBox(100, 200, 140, 32, "Duration (min):", "0"),
+        InputBox(100, 260, 140, 32, "Duration (sec):", "30"),
+        InputBox(100, 320, 140, 32, "Recover Station Time (sec):", "5", is_float=True),
+        InputBox(100, 380, 140, 32, "Damage Station Prob (%):", "1", is_float=True),
+        InputBox(100, 440, 140, 32, "Recover Satellite Time (sec):", "5", is_float=True),
+        InputBox(100, 500, 140, 32, "Damage Satellite Prob (%):", "1", is_float=True)]
 
     satellite_configs = []
     scroll_offset = 0
@@ -64,8 +67,8 @@ def show_simulation_popup():
         satellite_configs.append(SatelliteConfig(500, 0, name))
         satellite_name_counter += 1
 
-    ok_button = Button(100, 400, 140, 40, "Start", confirm)
-    back_button = Button(260, 400, 140, 40, "Back", cancel)
+    ok_button = Button(100, 600, 140, 40, "Start", confirm)
+    back_button = Button(260, 600, 140, 40, "Back", cancel)
     add_sat_button = Button(500, 40, 140, 35, "Add Satellite", add_satellite_config)
 
     popup_running = True
@@ -122,12 +125,16 @@ def show_simulation_popup():
         return None
 
     simulation_params = {
-        "recovery_time_seconds": input_boxes[0].get_value(),
-        "damage_probability": input_boxes[1].get_value() / 1000,
-        "duration": input_boxes[2].get_value(),
-        "duration_seconds": input_boxes[3].get_value(),
+        "duration": input_boxes[0].get_value(),
+        "duration_seconds": input_boxes[1].get_value(),
+        "recovery_time_seconds": input_boxes[2].get_value(),
+        "damage_probability": input_boxes[3].get_value() / 1000,
+        "satellite_recovery_time_seconds": input_boxes[4].get_value(),
+        "satellite_damage_probability": input_boxes[5].get_value() / 1000,
         "custom_satellites": [cfg.get_values() for cfg in satellite_configs]
 }
+
+
 
     print("Simulation parameters:", simulation_params)
     return simulation_params

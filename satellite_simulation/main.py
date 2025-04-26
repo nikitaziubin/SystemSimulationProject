@@ -11,9 +11,9 @@ import math
 from satellite import Satellite
 from station import Station
 import json
-# ── TRACK CONNECTION‐LOSS EVENTS ──
-active_losses = {}       # key=(sat,station) → {'start_time':…, 'sat_pos':(x,y), 'st_pos':(x,y)}
-connection_loss_log = [] # list of {'sat':…, 'station':…, 'start_time':…, 'duration':…}
+
+active_losses = {} 
+connection_loss_log = []
 
 
 pygame.init()
@@ -31,16 +31,26 @@ stations = []
 simulation_end_time = None  # Global variable to track end time
 simulation_running = False
 
-# Functions (create_satellite, add_random_station, find_closest_available_station) 
+satellite_counter = 1
+
 def create_satellite(sat_type):
+    global satellite_counter
     orbit_radius = random.uniform(MIN_ORBIT_RADIUS, MAX_ORBIT_RADIUS)
-    if sat_type == 'A': speed = random.uniform(MIN_SPEED_A, MAX_SPEED_A); color = SATELLITE_BLUE
-    elif sat_type == 'B': speed = random.uniform(MIN_SPEED_B, MAX_SPEED_B); color = SATELLITE_GREEN
-    else: return
+    if sat_type == 'A':
+        speed = random.uniform(MIN_SPEED_A, MAX_SPEED_A)
+        color = SATELLITE_BLUE
+    elif sat_type == 'B':
+        speed = random.uniform(MIN_SPEED_B, MAX_SPEED_B)
+        color = SATELLITE_GREEN
+    else:
+        return
     if random.random() < 0.4:
         speed *= -1
-    satellites.append(Satellite(orbit_radius=orbit_radius, speed=speed, color=color))
-    print(f"Created Type {sat_type} satellite with radius {orbit_radius:.0f}, speed {speed:.4f}")
+    name = f"S"
+    satellite_counter += 1
+    satellites.append(Satellite(orbit_radius=orbit_radius, speed=speed, color=color, name=name))
+    print(f"Created {name} Type {sat_type} satellite with radius {orbit_radius:.0f}, speed {speed:.4f}")
+
 
 def delete_selected_station():
     global selected_station
@@ -98,13 +108,16 @@ def terminate_simulation():
 
 def stop_simulation():
     global simulation_running, manual_controls_enabled, selected_station, satellites, stations
-    generate_report(satellites, stations)
-    print("Simulation stopped and report generated.")
     simulation_running = False
+
+    generate_report(satellites, stations)
+
+    manual_controls_enabled = True
     satellites.clear()
     stations.clear()
     selected_station = None
-    manual_controls_enabled = True
+    connection_loss_log.clear()
+    print("Simulation stopped and report generated.")
 
 
 def generate_report(satellites, stations):
@@ -115,48 +128,37 @@ def generate_report(satellites, stations):
     )
 
     with open("simulation_results.txt", "w", encoding="utf-8") as file:
-        file.write(f"Simulation Report\n")
-        file.write(f"=====================\n")
-        file.write(f"Total Data Transferred to Stations: {total_data:.2f} GB\n")
-        file.write(f"Estimated Data Lost: {lost_data:.2f} GB\n")
-        file.write("\n")
+        report_text = ""
 
-        file.write("Destroyed Satellites:\n")
+        report_text += "Simulation Report\n"
+        report_text += "=====================\n"
+        report_text += f"Total Data Transferred to Stations: {total_data:.2f} GB\n"
+        report_text += f"Estimated Data Lost: {lost_data:.2f} GB\n"
+        report_text += "\n"
+
+        report_text += "Destroyed Satellites:\n"
         for i, sat in enumerate(Satellite.destroyed_satellites_log, start=1):
             name = getattr(sat, "name", "Unknown")
-            file.write(
-                f" {i}. {name} Destroyed at {time.ctime(sat.destroyed_time)} "
-                f"| Position: ({sat.x:.1f}, {sat.y:.1f})\n"
-            )
+            report_text += f" {i}. {name} Destroyed at {time.ctime(sat.destroyed_time)} | Position: ({sat.x:.1f}, {sat.y:.1f})\n"
 
-        file.write("\nDamaged Stations Timeline:\n")
+        report_text += "\nDamaged Stations Timeline:\n"
         for station in stations:
             for entry in station.damage_log:
                 damage_time = time.ctime(entry[0])
                 if entry[1]:
                     repair_time = time.ctime(entry[1])
-                    data_loss = (
-                        entry[2]
-                        if len(entry) > 2
-                        else station.received_data / STATION_DATA_LOSS_ON_REPAIR
-                    )
-                    file.write(
-                        f" Station {station.id}: Damaged at {damage_time}, "
-                        f"Repaired at {repair_time}, Lost {data_loss:.2f} GB\n"
-                    )
+                    data_loss = entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR
+                    report_text += f" Station {station.id}: Damaged at {damage_time}, Repaired at {repair_time}, Lost {data_loss:.2f} GB\n"
                 else:
-                    file.write(
-                        f" Station {station.id}: Damaged at {damage_time}, Not yet repaired\n"
-                    )
+                    report_text += f" Station {station.id}: Damaged at {damage_time}, Not yet repaired\n"
 
-        # ── Connection Loss Events ──
-        file.write("\nConnection Loss Events:\n")
+        report_text += "\nConnection Loss Events:\n"
         for i, ev in enumerate(connection_loss_log, start=1):
             start_str = time.ctime(ev['start_time'])
-            file.write(
-                f" {i}. {ev['sat']} ↔ Station {ev['station']}: "
-                f"Outage started at {start_str}, duration {ev['duration']:.2f} s\n"
-            )
+            report_text += f" {i}. {ev['sat']} Station {ev['station']}: Outage started at {start_str}, duration {ev['duration']:.2f} s\n"
+
+        # Finally write all at once
+        file.write(report_text)
 
     print("Report written to simulation_results.txt")
 
@@ -390,6 +392,7 @@ while running:
             satellites.clear()
             stations.clear()
             selected_station = None
+            connection_loss_log.clear()
             print("Simulation finished and elements cleared.")
 
     pygame.display.flip()

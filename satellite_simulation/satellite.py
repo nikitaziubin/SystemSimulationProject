@@ -7,10 +7,14 @@ import time
 JAMMING_PROBABILITY = 0.01
 JAMMING_DATA_LOSS_FACTOR = 0.5
 
+
+
 class Satellite:
     destroyed_satellites_log = []
     jamming_log = []
 
+    satellite_damage_probability = 0.001
+    satellite_repair_time_seconds = 5
     def __init__(self, orbit_radius, speed, color, name):
         self.name = name
         self.orbit_radius = orbit_radius
@@ -67,7 +71,7 @@ class Satellite:
                 transferred = current_transfer_rate * (delta_time / 1000)
                 transferred = min(transferred, self.data_amount)
 
-                # --- Simulate jamming ---
+                #Simulate jamming
                 if random.random() < JAMMING_PROBABILITY:
                     jammed_transferred = transferred * JAMMING_DATA_LOSS_FACTOR
                     lost_due_to_jamming = transferred - jammed_transferred
@@ -84,7 +88,7 @@ class Satellite:
                 else:
                     self.transferring = False
 
-                if random.random() < SATELLITE_DAMAGE_PROBABILITY:
+                if random.random() < Satellite.satellite_damage_probability:
                     self.status = 'damaging'
                     self.is_blinking = True
                     self.blink_start_time = current_ticks
@@ -95,7 +99,7 @@ class Satellite:
 
         elif self.status == 'damaging':
             elapsed_blink_time = current_ticks - self.blink_start_time
-            if elapsed_blink_time > BLINK_DURATION_MS:
+            if elapsed_blink_time > Satellite.satellite_repair_time_seconds * 1000:
                 self.status = 'destroyed'
                 self.is_blinking = False
                 self.destroyed_time = time.time()
