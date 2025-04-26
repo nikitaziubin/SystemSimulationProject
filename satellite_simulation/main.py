@@ -12,6 +12,9 @@ from satellite import Satellite
 from station import Station
 import json
 
+# when the satellite is broken it has to continue moving 
+
+
 active_losses = {} 
 connection_loss_log = []
 
@@ -177,8 +180,8 @@ def generate_report(satellites, stations):
 
 
 # --- Buttons ---
-button1 = Button(20, 20, 250, 40, "Create Satellite Type A (Blue)", lambda: create_satellite('A'))
-button2 = Button(20, 70, 250, 40, "Create Satellite Type B (Green)", lambda: create_satellite('B'))
+button1 = Button(20, 20, 250, 40, "Add commercial satellite (blue)", lambda: create_satellite('A'))
+button2 = Button(20, 70, 250, 40, "Add military satellite (green)", lambda: create_satellite('B'))
 button_delete_station = Button(20, 120, 250, 40, "Delete Selected Station", delete_selected_station)
 button_start_simulation = Button(20, 170, 250, 40, "Start Simulation", on_start_simulation_click)
 button_terminate_simulation = Button(WIDTH - 250, 60, 200, 40, "Terminate Simulation", None)
@@ -307,8 +310,7 @@ while running:
             if best_station:
                 best_station.connect_satellite(sat)
 
-    # ── DETECT CONNECTION OUTAGES ──
-    # compare old vs new for each satellite
+    # DETECT CONNECTION OUTAGES compare old vs new for each satellite
     for sat in satellites:
         old = prev_conn.get(sat)
         new = sat.connected_to
@@ -351,7 +353,7 @@ while running:
     for sat in satellites:
         sat.draw(screen)
 
-    # ── DRAW RED LINES FOR ACTIVE OUTAGES ──
+    # DRAW RED LINES FOR ACTIVE OUTAGES
     now = time.time()
     for info in active_losses.values():
         # only draw if it’s been less than 1 second since the loss started

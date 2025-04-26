@@ -41,12 +41,12 @@ def show_simulation_popup():
     satellite_name_counter = 1
 
     input_boxes = [
-        InputBox(100, 200, 140, 32, "Duration (min):", "0"),
-        InputBox(100, 260, 140, 32, "Duration (sec):", "30"),
+        InputBox(100, 200, 140, 32, "Duration (min):", "5"),
+        InputBox(100, 260, 140, 32, "Duration (sec):", "0"),
         InputBox(100, 320, 140, 32, "Recover Station Time (sec):", "5", is_float=True),
         InputBox(100, 380, 140, 32, "Damage Station Prob (%):", "1", is_float=True),
         InputBox(100, 440, 140, 32, "Recover Satellite Time (sec):", "5", is_float=True),
-        InputBox(100, 500, 140, 32, "Damage Satellite Prob (%):", "1", is_float=True)]
+        InputBox(100, 500, 140, 32, "Damage Satellite Prob (%):", "0.3", is_float=True)]
 
     satellite_configs = []
     scroll_offset = 0
