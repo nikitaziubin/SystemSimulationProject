@@ -1,0 +1,17 @@
+Simulation Report
+=====================
+Total Data Transferred to Stations: 19.93 GB
+Estimated Data Lost: 2.76 GB
+
+Destroyed Satellites:
+ 1. S7 Destroyed at Sat Apr 26 18:19:07 2025 | Position: (568.2, 698.0)
+
+Damaged Stations Timeline:
+ Station 9: Damaged at Sat Apr 26 18:18:54 2025, Repaired at Sat Apr 26 18:19:01 2025, Lost 0.00 GB
+ Station 10: Damaged at Sat Apr 26 18:19:03 2025, Repaired at Sat Apr 26 18:19:08 2025, Lost 2.76 GB
+
+Connection Loss Events:
+ 1. S3 ↔ Station 3: Outage started at Sat Apr 26 18:17:08 2025, duration 5.02 s
+ 2. S6 ↔ Station 3: Outage started at Sat Apr 26 18:17:08 2025, duration 5.02 s
+ 3. S7 ↔ Station 3: Outage started at Sat Apr 26 18:17:08 2025, duration 6.95 s
+ 4. S3 ↔ Station 10: Outage started at Sat Apr 26 18:19:03 2025, duration 5.01 s

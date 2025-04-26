@@ -11,6 +11,9 @@ import math
 from satellite import Satellite
 from station import Station
 import json
+# ── TRACK CONNECTION‐LOSS EVENTS ──
+active_losses = {}       # key=(sat,station) → {'start_time':…, 'sat_pos':(x,y), 'st_pos':(x,y)}
+connection_loss_log = [] # list of {'sat':…, 'station':…, 'start_time':…, 'duration':…}
 
 
 pygame.init()
@@ -111,7 +114,7 @@ def generate_report(satellites, stations):
         for station in stations for entry in station.damage_log if entry[1]
     )
 
-    with open("simulation_results.txt", "w") as file:
+    with open("simulation_results.txt", "w", encoding="utf-8") as file:
         file.write(f"Simulation Report\n")
         file.write(f"=====================\n")
         file.write(f"Total Data Transferred to Stations: {total_data:.2f} GB\n")
@@ -119,9 +122,12 @@ def generate_report(satellites, stations):
         file.write("\n")
 
         file.write("Destroyed Satellites:\n")
-        for i, sat in enumerate(Satellite.destroyed_satellites_log):
-            name = getattr(sat, "name", "Unknown")  # fallback if name missing
-            file.write(f" {i+1}. {name} Destroyed at {time.ctime(sat.destroyed_time)} | Position: ({sat.x:.1f}, {sat.y:.1f})\n")
+        for i, sat in enumerate(Satellite.destroyed_satellites_log, start=1):
+            name = getattr(sat, "name", "Unknown")
+            file.write(
+                f" {i}. {name} Destroyed at {time.ctime(sat.destroyed_time)} "
+                f"| Position: ({sat.x:.1f}, {sat.y:.1f})\n"
+            )
 
         file.write("\nDamaged Stations Timeline:\n")
         for station in stations:
@@ -129,12 +135,31 @@ def generate_report(satellites, stations):
                 damage_time = time.ctime(entry[0])
                 if entry[1]:
                     repair_time = time.ctime(entry[1])
-                    data_loss = entry[2] if len(entry) > 2 else station.received_data / STATION_DATA_LOSS_ON_REPAIR
-                    file.write(f" Station {station.id}: Damaged at {damage_time}, Repaired at {repair_time}, Lost {data_loss:.2f} GB\n")
+                    data_loss = (
+                        entry[2]
+                        if len(entry) > 2
+                        else station.received_data / STATION_DATA_LOSS_ON_REPAIR
+                    )
+                    file.write(
+                        f" Station {station.id}: Damaged at {damage_time}, "
+                        f"Repaired at {repair_time}, Lost {data_loss:.2f} GB\n"
+                    )
                 else:
-                    file.write(f" Station {station.id}: Damaged at {damage_time}, Not yet repaired\n")
+                    file.write(
+                        f" Station {station.id}: Damaged at {damage_time}, Not yet repaired\n"
+                    )
+
+        # ── Connection Loss Events ──
+        file.write("\nConnection Loss Events:\n")
+        for i, ev in enumerate(connection_loss_log, start=1):
+            start_str = time.ctime(ev['start_time'])
+            file.write(
+                f" {i}. {ev['sat']} ↔ Station {ev['station']}: "
+                f"Outage started at {start_str}, duration {ev['duration']:.2f} s\n"
+            )
 
     print("Report written to simulation_results.txt")
+
 
 
 
@@ -158,6 +183,8 @@ def disable_manual_controls():
 running = True
 while running:
     current_ticks = pygame.time.get_ticks()
+
+    prev_conn = { sat: sat.connected_to for sat in satellites }
 
     # --- Event Handling (remains unchanged) ---
     for event in pygame.event.get():
@@ -267,6 +294,32 @@ while running:
             if best_station:
                 best_station.connect_satellite(sat)
 
+    # ── DETECT CONNECTION OUTAGES ──
+    # compare old vs new for each satellite
+    for sat in satellites:
+        old = prev_conn.get(sat)
+        new = sat.connected_to
+        # 1) link dropped → start outage
+        if old is not None and new is None:
+            key = (sat, old)
+            if key not in active_losses:
+                active_losses[key] = {
+                    'start_time': time.time(),
+                    'sat_pos': (sat.x, sat.y),
+                    'st_pos': (old.x, old.y)
+                }
+        # 2) re‐connected → end outage & log duration
+        elif old is None and new is not None:
+            key = (sat, new)
+            if key in active_losses:
+                info = active_losses.pop(key)
+                duration = time.time() - info['start_time']
+                connection_loss_log.append({
+                    'sat': sat.name,
+                    'station': new.id,
+                    'start_time': info['start_time'],
+                    'duration': duration
+                })
 
     # --- Drawing ---
     screen.fill(DARK_SPACE)
@@ -284,6 +337,17 @@ while running:
 
     for sat in satellites:
         sat.draw(screen)
+
+    # ── DRAW RED LINES FOR ACTIVE OUTAGES ──
+    now = time.time()
+    for info in active_losses.values():
+        # only draw if it’s been less than 1 second since the loss started
+        if now - info['start_time'] < 1.0:
+            sx, sy = info['sat_pos']
+            tx, ty = info['st_pos']
+            pygame.draw.line(screen, BLINK_RED,
+                            (int(tx), int(ty)),
+                            (int(sx), int(sy)), 2)
 
     # Draw UI Text (remains unchanged)
     if selected_station:

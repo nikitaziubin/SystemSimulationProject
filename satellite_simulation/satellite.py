@@ -4,8 +4,12 @@ import math
 from config import *
 import time
 
+JAMMING_PROBABILITY = 0.01
+JAMMING_DATA_LOSS_FACTOR = 0.5
+
 class Satellite:
-    destroyed_satellites_log = [] 
+    destroyed_satellites_log = []
+    jamming_log = []
 
     def __init__(self, orbit_radius, speed, color, name):
         self.name = name
@@ -28,13 +32,11 @@ class Satellite:
         self.transfer_rate = 0.5
         self.transferring = False
         self.destroyed_time = None
-
-        # --- Burst Mode ---
         self.is_in_burst = False
         self.burst_transfer_rate = self.transfer_rate * 2
-        self.burst_duration_ms = 3000  # 3 seconds burst
+        self.burst_duration_ms = 3000
         self.burst_start_time = None
-        self.connected_stations_set = set()  # Remember stations where burst was already used
+        self.connected_stations_set = set()
 
     def update(self, current_ticks, stations, delta_time):
         if self.connected_to and (self.status != 'operational' or self.connected_to not in stations):
@@ -51,13 +53,11 @@ class Satellite:
             if self.connected_to:
                 self.transferring = True
 
-                # --- New burst only if first time with this station ---
                 if self.connected_to not in self.connected_stations_set:
                     self.is_in_burst = True
                     self.burst_start_time = current_ticks
                     self.connected_stations_set.add(self.connected_to)
 
-                # Check if burst still active
                 if self.is_in_burst and (current_ticks - self.burst_start_time <= self.burst_duration_ms):
                     current_transfer_rate = self.burst_transfer_rate
                 else:
@@ -66,6 +66,14 @@ class Satellite:
 
                 transferred = current_transfer_rate * (delta_time / 1000)
                 transferred = min(transferred, self.data_amount)
+
+                # --- Simulate jamming ---
+                if random.random() < JAMMING_PROBABILITY:
+                    jammed_transferred = transferred * JAMMING_DATA_LOSS_FACTOR
+                    lost_due_to_jamming = transferred - jammed_transferred
+                    Satellite.jamming_log.append((self.name, time.ctime(), lost_due_to_jamming))
+                    transferred = jammed_transferred
+
                 self.data_amount -= transferred
                 self.connected_to.receive_data(transferred)
 
@@ -116,31 +124,25 @@ class Satellite:
 
         pygame.draw.circle(surface, current_body_color, (x, y), body_radius)
 
-        draw_panels = True
         panel_color = OPERATIONAL_PANEL_COLOR
         if self.status == 'damaging':
-            if self.blink_on:
-                panel_color = BLINK_RED
-            else:
-                panel_color = DAMAGED_PANEL_COLOR
+            panel_color = BLINK_RED if self.blink_on else DAMAGED_PANEL_COLOR
 
-        if draw_panels:
-            panel_angle_rad = self.angle + math.pi / 2
+        panel_angle_rad = self.angle + math.pi / 2
 
-            p1_start_x = x + math.cos(panel_angle_rad) * body_radius
-            p1_start_y = y + math.sin(panel_angle_rad) * body_radius
-            p1_end_x = x + math.cos(panel_angle_rad) * (body_radius + panel_length)
-            p1_end_y = y + math.sin(panel_angle_rad) * (body_radius + panel_length)
+        p1_start_x = x + math.cos(panel_angle_rad) * body_radius
+        p1_start_y = y + math.sin(panel_angle_rad) * body_radius
+        p1_end_x = x + math.cos(panel_angle_rad) * (body_radius + panel_length)
+        p1_end_y = y + math.sin(panel_angle_rad) * (body_radius + panel_length)
 
-            p2_start_x = x - math.cos(panel_angle_rad) * body_radius
-            p2_start_y = y - math.sin(panel_angle_rad) * body_radius
-            p2_end_x = x - math.cos(panel_angle_rad) * (body_radius + panel_length)
-            p2_end_y = y - math.sin(panel_angle_rad) * (body_radius + panel_length)
+        p2_start_x = x - math.cos(panel_angle_rad) * body_radius
+        p2_start_y = y - math.sin(panel_angle_rad) * body_radius
+        p2_end_x = x - math.cos(panel_angle_rad) * (body_radius + panel_length)
+        p2_end_y = y - math.sin(panel_angle_rad) * (body_radius + panel_length)
 
-            pygame.draw.line(surface, panel_color, (int(p1_start_x), int(p1_start_y)), (int(p1_end_x), int(p1_end_y)), panel_width)
-            pygame.draw.line(surface, panel_color, (int(p2_start_x), int(p2_start_y)), (int(p2_end_x), int(p2_end_y)), panel_width)
+        pygame.draw.line(surface, panel_color, (int(p1_start_x), int(p1_start_y)), (int(p1_end_x), int(p1_end_y)), panel_width)
+        pygame.draw.line(surface, panel_color, (int(p2_start_x), int(p2_start_y)), (int(p2_end_x), int(p2_end_y)), panel_width)
 
-        # --- Draw connection line ---
         if self.connected_to:
             line_color = (255, 255, 0) if self.is_in_burst else COMM_LINE_COLOR
             pygame.draw.line(surface, line_color, (x, y),
@@ -150,8 +152,8 @@ class Satellite:
             data_text = f"{int(self.data_amount)} GB"
             data_surface = pygame.font.SysFont(None, 18).render(data_text, True, WHITE)
             surface.blit(data_surface, (x + 10, y - 10))
+
             name_font = pygame.font.SysFont(None, 15)
             name_surface = name_font.render(self.name, True, WHITE)
             name_rect = name_surface.get_rect(center=(x, y))
             surface.blit(name_surface, name_rect)
-
