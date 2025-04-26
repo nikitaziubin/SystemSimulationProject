@@ -118,10 +118,9 @@ class Satellite:
         if self.connected_to:
             pygame.draw.line(surface, COMM_LINE_COLOR, (x, y), (int(self.connected_to.x), int(self.connected_to.y)), 1)
 
-        # --- NEW PART: Draw Satellite Name inside body ---
         if hasattr(self, "name"):
-            name_font = pygame.font.SysFont(None, 12)  # smaller font
-            name_surface = name_font.render(self.name, True, (0, 0, 0))  # black text inside
+            name_font = pygame.font.SysFont(None, 12)
+            name_surface = name_font.render(self.name, True, (255, 255, 255))
             name_rect = name_surface.get_rect(center=(x, y))
             surface.blit(name_surface, name_rect)
 

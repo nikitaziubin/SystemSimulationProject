@@ -5,6 +5,7 @@ import time
 
 class Station:
     _id_counter = 0
+    station_damage_probability = 0.001
 
     def __init__(self, x, y):
         self.id = Station._id_counter
@@ -37,12 +38,14 @@ class Station:
     def draw(self, screen_surface, is_selected, capacity_font):
         radius_color_tuple = COMM_RADIUS_SELECTED_COLOR if is_selected else COMM_RADIUS_COLOR
 
+
+
         if is_selected:
             radius_color_tuple = (0, 200, 0, 60)
         else:
             radius_color_tuple = (0, 120, 0, 30)   
 
-        radius_color = pygame.Color(*radius_color_tuple) # Includes alpha
+        radius_color = pygame.Color(*radius_color_tuple)
 
         if self.comm_radius > 0:
             radius_surface_size = int(self.comm_radius * 2) + 4
@@ -93,6 +96,12 @@ class Station:
         antenna_pos = (self.size // 2, self.size // 2 - body_height // 2 - 2)
         pygame.draw.circle(self.surface, WHITE, antenna_pos, 3)
 
+        id_font = pygame.font.SysFont(None, 16)  # Small font
+        id_surface = id_font.render(str(self.id), True, WHITE)
+        id_rect = id_surface.get_rect(center=(self.size // 2, self.size // 2))
+        self.surface.blit(id_surface, id_rect)
+
+
         alpha = STATION_ALPHA_SELECTED if is_selected else STATION_ALPHA_NORMAL
         self.surface.set_alpha(alpha)
         blit_pos = (int(self.x - self.size // 2), int(self.y - self.size // 2))
@@ -117,7 +126,7 @@ class Station:
     
 
     def update(self, current_ticks):
-        if self.status == 'operational' and random.random() < STATION_DAMAGE_PROBABILITY:
+        if self.status == 'operational' and random.random() < Station.station_damage_probability:
             self.status = 'damaged'
             self.damage_start_time = current_ticks
             self.damage_log.append([time.time(), None])  # Record start

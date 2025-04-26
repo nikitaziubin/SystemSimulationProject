@@ -17,9 +17,10 @@ scroll_speed = 20
 def start_simulation(satellites, stations, disable_manual_controls_callback, params):
     duration_minutes = int(params["duration"])
     duration_seconds = int(params["duration_seconds"])
+    damage_probability = float(params.get("damage_probability", 0.001))
 
     disable_manual_controls_callback()
-
+    Station.station_damage_probability = damage_probability
     if "custom_satellites" in params:
         for name, orbit_radius, speed, color in params["custom_satellites"]:
             satellites.append(Satellite(orbit_radius, speed, color, name))
@@ -33,6 +34,7 @@ def show_simulation_popup():
     satellite_name_counter = 1
 
     input_boxes = [
+        InputBox(100, 220, 140, 32, "Damage Prob (%):", "1", is_float=True),
         InputBox(100, 280, 140, 32, "Duration (min):", "0"),
         InputBox(100, 340, 140, 32, "Duration (sec):", "30")
     ]
@@ -114,8 +116,9 @@ def show_simulation_popup():
         return None
 
     simulation_params = {
-        "duration": input_boxes[0].get_value(),
-        "duration_seconds": input_boxes[1].get_value(),
+        "damage_probability": input_boxes[0].get_value() / 1000,
+        "duration": input_boxes[1].get_value(),
+        "duration_seconds": input_boxes[2].get_value(),
         "custom_satellites": [cfg.get_values() for cfg in satellite_configs]
     }
 
@@ -126,7 +129,7 @@ class SatelliteConfig:
     def __init__(self, x, y, default_name="S"):
         self.base_x = x
         self.base_y = y
-        self.orbit_box = InputBox(x, y, 100, 30, "Radius", "200", is_float=True)
+        self.orbit_box = InputBox(x, y, 100, 30, "Radius", "250", is_float=True)
         self.speed_box = InputBox(x + 110, y, 100, 30, "Speed", "0.002", is_float=True)
         self.dropdown_rect = pygame.Rect(x + 220, y, 100, 30)  # Color Dropdown
         self.name_box = InputBox(x + 330, y, 100, 30, "Name", default_name)
