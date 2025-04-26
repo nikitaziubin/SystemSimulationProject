@@ -6,6 +6,7 @@ import time
 class Station:
     _id_counter = 0
     station_damage_probability = 0.001
+    station_repair_time_ms = 5000
 
     def __init__(self, x, y):
         self.id = Station._id_counter
@@ -135,7 +136,7 @@ class Station:
             print(f"Station {self.id} damaged!")
 
         elif self.status == 'damaged':
-            if current_ticks - self.damage_start_time > STATION_REPAIR_TIME_MS:
+            if current_ticks - self.damage_start_time > Station.station_repair_time_ms:
                 self.status = 'operational'
 
                 lost_data = self.received_data / STATION_DATA_LOSS_ON_REPAIR
