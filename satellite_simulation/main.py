@@ -39,6 +39,16 @@ def create_satellite(sat_type):
     satellites.append(Satellite(orbit_radius=orbit_radius, speed=speed, color=color))
     print(f"Created Type {sat_type} satellite with radius {orbit_radius:.0f}, speed {speed:.4f}")
 
+def delete_selected_station():
+    global selected_station
+    if selected_station in stations:
+        stations.remove(selected_station)
+        selected_station.disconnect_all()
+        print(f"Deleted Station ID {selected_station.id}")
+        selected_station = None
+    else:
+        print("No station selected to delete.")
+
 def add_random_station():
     max_attempts = 100
     for _ in range(max_attempts):
@@ -106,7 +116,7 @@ def generate_report(satellites, stations):
 # --- Buttons ---
 button1 = Button(20, 20, 250, 40, "Create Satellite Type A (Blue)", lambda: create_satellite('A'))
 button2 = Button(20, 70, 250, 40, "Create Satellite Type B (Green)", lambda: create_satellite('B'))
-button_add_station = Button(20, 120, 250, 40, "Add Random Station", add_random_station)
+button_delete_station = Button(20, 120, 250, 40, "Delete Selected Station", delete_selected_station)
 button_start_simulation = Button(20, 170, 250, 40, "Start Simulation", on_start_simulation_click)
 
 
@@ -127,19 +137,19 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
             clicked_on_button = (
-            button1.is_hovered() or
-            button2.is_hovered() or
-            button_add_station.is_hovered() or
-            button_start_simulation.is_hovered())
+                button1.is_hovered() or
+                button2.is_hovered() or
+                button_delete_station.is_hovered() or
+                button_start_simulation.is_hovered())
 
-            station_interacted_with = False # Reset interaction flag
+            station_interacted_with = False
 
             # Left Click
             if event.button == 1:
                 if clicked_on_button and manual_controls_enabled:
                     button1.handle_click()
                     button2.handle_click()
-                    button_add_station.handle_click()
+                    button_delete_station.handle_click()
                     button_start_simulation.handle_click()
                     station_interacted_with = True
                 else:
@@ -255,7 +265,7 @@ while running:
     # Draw Buttons
     button1.draw(screen)
     button2.draw(screen)
-    button_add_station.draw(screen)
+    button_delete_station.draw(screen)
     button_start_simulation.draw(screen)
 
     # Show simulation timer if active
