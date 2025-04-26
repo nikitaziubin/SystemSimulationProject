@@ -4,7 +4,7 @@ import math
 from config import *
 import time
 
-JAMMING_PROBABILITY = 0.01
+JAMMING_PROBABILITY = 0.00000000001
 JAMMING_DATA_LOSS_FACTOR = 0.5
 
 

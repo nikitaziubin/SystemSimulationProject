@@ -31,6 +31,7 @@ stations = []
 simulation_end_time = None  # Global variable to track end time
 simulation_running = False
 
+
 satellite_counter = 1
 
 def create_satellite(sat_type):
@@ -50,7 +51,6 @@ def create_satellite(sat_type):
     satellite_counter += 1
     satellites.append(Satellite(orbit_radius=orbit_radius, speed=speed, color=color, name=name))
     print(f"Created {name} Type {sat_type} satellite with radius {orbit_radius:.0f}, speed {speed:.4f}")
-
 
 def delete_selected_station():
     global selected_station
@@ -109,6 +109,17 @@ def terminate_simulation():
 def stop_simulation():
     global simulation_running, manual_controls_enabled, selected_station, satellites, stations
     simulation_running = False
+
+    now = time.time()
+    for (sat, station), info in active_losses.items():
+        duration = now - info['start_time']
+        connection_loss_log.append({
+            'sat': sat.name,
+            'station': station.id,
+            'start_time': info['start_time'],
+            'duration': duration
+        })
+    active_losses.clear()
 
     generate_report(satellites, stations)
 
@@ -386,6 +397,18 @@ while running:
 
         if remaining_seconds <= 0:
             simulation_running = False
+
+            now = time.time()
+            for (sat, station), info in active_losses.items():
+                duration = now - info['start_time']
+                connection_loss_log.append({
+                    'sat': sat.name,
+                    'station': station.id,
+                    'start_time': info['start_time'],
+                    'duration': duration
+                })
+            active_losses.clear()
+
             generate_report(satellites, stations)
 
             manual_controls_enabled = True
