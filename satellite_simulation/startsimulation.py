@@ -143,14 +143,21 @@ class SatelliteConfig:
     def __init__(self, x, y, default_name="S"):
         self.base_x = x
         self.base_y = y
-        self.orbit_box = InputBox(x, y, 100, 30, "Radius", "250", is_float=True)
-        self.speed_box = InputBox(x + 110, y, 100, 30, "Speed", "0.002", is_float=True)
-        self.dropdown_rect = pygame.Rect(x + 220, y, 100, 30)  # Color Dropdown
+        random_radius = random.choice(range(0, 145)) + 250
+        self.orbit_box = InputBox(x, y, 100, 30, "Radius", str(random_radius), is_float=True)
+
+        base_speed = 0.004
+        speed = base_speed * (260 / random_radius)
+        speed = round(speed, 5)
+
+
+        self.speed_box = InputBox(x + 110, y, 100, 30, "Speed", str(speed), is_float=True)
+        self.dropdown_rect = pygame.Rect(x + 220, y, 100, 30)  
         self.name_box = InputBox(x + 330, y, 100, 30, "Name", default_name)
         self.remove_button = Button(x + 440, y, 30, 30, "X", None)
 
         self.color_options = ["Green", "Blue"]
-        self.selected_color_index = 0
+        self.selected_color_index = random.choice([0, 1])  
 
     def handle_event(self, event, scroll_offset, base_y):
         y = base_y + scroll_offset

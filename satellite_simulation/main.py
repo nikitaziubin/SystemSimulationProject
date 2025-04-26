@@ -419,7 +419,6 @@ while running:
             selected_station = None
             connection_loss_log.clear()
             print("Simulation finished and elements cleared.")
-
     pygame.display.flip()
     clock.tick(60)
 
