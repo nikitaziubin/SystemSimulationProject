@@ -12,12 +12,8 @@ from satellite import Satellite
 from station import Station
 import json
 
-# when the satellite is broken it has to continue moving 
-
-
 active_losses = {} 
 connection_loss_log = []
-
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -31,7 +27,7 @@ delta_time = clock.tick(60)
 satellites = []
 stations = []
 
-simulation_end_time = None  # Global variable to track end time
+simulation_end_time = None
 simulation_running = False
 
 
@@ -179,7 +175,7 @@ def generate_report(satellites, stations):
 
 
 
-# --- Buttons ---
+#Buttons 
 button1 = Button(20, 20, 250, 40, "Add commercial satellite (blue)", lambda: create_satellite('A'))
 button2 = Button(20, 70, 250, 40, "Add military satellite (green)", lambda: create_satellite('B'))
 button_delete_station = Button(20, 120, 250, 40, "Delete Selected Station", delete_selected_station)
@@ -202,7 +198,7 @@ while running:
 
     prev_conn = { sat: sat.connected_to for sat in satellites }
 
-    # --- Event Handling (remains unchanged) ---
+    #Event Handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -282,7 +278,7 @@ while running:
                          station_interacted_with = True # Count as interaction
 
 
-    # --- Update Logic  
+    #Update Logic  
     for sat in satellites:
         sat.update(current_ticks, stations, delta_time)
 
@@ -314,7 +310,6 @@ while running:
     for sat in satellites:
         old = prev_conn.get(sat)
         new = sat.connected_to
-        # 1) link dropped → start outage
         if old is not None and new is None:
             key = (sat, old)
             if key not in active_losses:
@@ -323,7 +318,6 @@ while running:
                     'sat_pos': (sat.x, sat.y),
                     'st_pos': (old.x, old.y)
                 }
-        # 2) re‐connected → end outage & log duration
         elif old is None and new is not None:
             key = (sat, new)
             if key in active_losses:
@@ -336,7 +330,7 @@ while running:
                     'duration': duration
                 })
 
-    # --- Drawing ---
+    #Drawing
     screen.fill(DARK_SPACE)
     for x, y, r in stars: pygame.draw.circle(screen, STAR_COLOR, (int(x), int(y)), int(r))
 
