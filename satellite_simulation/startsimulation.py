@@ -15,10 +15,14 @@ POPUP_WIDTH, POPUP_HEIGHT = 500, 600
 popup_screen = None
 popup_clock = pygame.time.Clock()
 popup_font = pygame.font.Font(None, 26)
-
+satellite_counter = 0
 # --- start_simulation function ---
 def start_simulation(satellites_list, stations_list, disable_manual_controls_callback, params):
-    global satellite_counter # Access counter from main.py
+    # --- ADD global declaration here ---
+    # This tells the function to use the 'satellite_counter' variable
+    # defined in the global scope (which should be in main.py)
+    global satellite_counter
+    # --- End global declaration ---
 
     # Get simulation parameters (unchanged)
     duration_minutes = int(params["duration"])
@@ -60,35 +64,28 @@ def start_simulation(satellites_list, stations_list, disable_manual_controls_cal
             print(f"Warning: Could not place station {i+1} without overlap after {max_attempts} attempts.")
 
 
-    # --- Create Satellites (MODIFIED FOR COLOR/TYPE) ---
+    # --- Create Satellites (Uses global satellite_counter now) ---
     satellites_list.clear()
-    # Assuming satellite_counter is correctly managed as global in main.py or passed if needed
-    try:
-        # Reset counter if it exists (should be handled in main.py ideally)
-        if 'satellite_counter' in globals():
-            satellite_counter = 1
-    except NameError:
-         print("Warning: global satellite_counter not found, starting at 1.")
-         satellite_counter = 1 # Local fallback
-
+    # --- REMOVED the try...except block for satellite_counter ---
+    # The 'global' keyword handles making it accessible.
+    # Ensure it's reset in main.py before this function is called.
 
     altitudes_km = KUIPER_ALTITUDES_KM
 
     for i in range(num_satellites):
-        # Assign altitude (same as before)
         altitude = altitudes_km[i % len(altitudes_km)]
-        # Distribute initial angles (same as before)
         initial_angle = (2 * math.pi / num_satellites) * i if num_satellites > 0 else 0
 
-        # --- Assign Type and Color ---
-        sat_type = random.choice(['A', 'B']) # 'A' = Commercial, 'B' = Military
+        sat_type = random.choice(['A', 'B'])
         color = SATELLITE_BLUE if sat_type == 'A' else SATELLITE_GREEN
         prefix = "COM" if sat_type == 'A' else "MIL"
-        name = f"{prefix}-{satellite_counter}"
-        # --- End Type/Color Assignment ---
 
-        # Pass altitude, name, AND color to constructor
+        # This line should now work correctly
+        name = f"{prefix}-{satellite_counter}"
+
         satellites_list.append(Satellite(altitude_km=altitude, name=name, color=color, initial_angle=initial_angle))
+
+        # Increment the global counter directly
         satellite_counter += 1
 
     # --- Rest of the function is unchanged ---
@@ -127,8 +124,8 @@ def show_simulation_popup():
     input_boxes = [
         InputBox(popup_rect.x + 50, popup_rect.y + 50, 140, 32, "Duration (min):", "10"),
         InputBox(popup_rect.x + 250, popup_rect.y + 50, 140, 32, "Duration (sec):", "0"),
-        InputBox(popup_rect.x + 50, popup_rect.y + 120, 140, 32, "Num Satellites:", "50"),
-        InputBox(popup_rect.x + 250, popup_rect.y + 120, 140, 32, "Num Stations:", "10"),
+        InputBox(popup_rect.x + 50, popup_rect.y + 120, 140, 32, "Num Satellites:", "27"),
+        InputBox(popup_rect.x + 250, popup_rect.y + 120, 140, 32, "Num Stations:", "12"),
         InputBox(popup_rect.x + 50, popup_rect.y + 220, 200, 32, "Station Recover Time (s):", f"{Station.station_repair_time_ms / 1000.0:.1f}", is_float=True),
         InputBox(popup_rect.x + 50, popup_rect.y + 280, 200, 32, "Station Damage Prob (%):", f"{Station.station_damage_probability * 100:.2f}", is_float=True),
         InputBox(popup_rect.x + 50, popup_rect.y + 340, 200, 32, "Satellite Recover Time (s):", f"{Satellite.satellite_repair_time_seconds:.1f}", is_float=True),

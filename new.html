@@ -3,375 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Satellite Communication Simulation</title>
+    <title>Satellite Simulation - Final Corrected</title>
     <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        h1 {
-            color: #333;
-        }
-        .simulation-container {
-            position: relative;
-            width: 80vw; /* Adjust as needed */
-            max-width: 800px;
-            height: 60vh; /* Adjust as needed */
-            max-height: 600px;
-            border: 2px solid #555;
-            background-color: #000020; /* Dark space background */
-            overflow: hidden; /* Keep elements inside */
-            margin-bottom: 20px;
-        }
-        svg {
-            width: 100%;
-            height: 100%;
-        }
-        /* Styling SVG elements via classes */
-        .satellite {
-            fill: #00bcd4; /* Cyan */
-            stroke: #ffffff;
-            stroke-width: 1;
-            transition: cx 0.1s linear, cy 0.1s linear; /* Smooth movement */
-        }
-        .ground-station {
-            fill: #4caf50; /* Green */
-            stroke: #ffffff;
-            stroke-width: 1;
-        }
-         .ground-station-range {
-            fill: rgba(76, 175, 80, 0.1); /* Transparent green */
-            stroke: rgba(76, 175, 80, 0.3);
-            stroke-width: 1;
-            stroke-dasharray: 5, 5;
-        }
-        .comm-link {
-            stroke: #ffeb3b; /* Yellow */
-            stroke-width: 1.5;
-            stroke-dasharray: 4, 2;
-            pointer-events: none; /* Prevent lines interfering with clicks */
-        }
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .control-group label {
-            font-size: 0.9em;
-            color: #555;
-        }
-        .control-group input[type="number"] {
-            width: 80px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #status {
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #333;
-            min-height: 20px;
-        }
+        /* Final CSS */
+        body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;background-color:#f0f0f0;margin:0;padding:15px;box-sizing:border-box}
+        h1{color:#333;margin-bottom:10px}
+        .simulation-container{position:relative;width:90vw;max-width:900px;height:65vh;max-height:600px;border:2px solid #555;background-color:#000020;overflow:hidden;margin-bottom:15px;cursor:default}
+        svg{width:100%;height:100%;display:block}
 
+        /* --- Icons --- */
+        .satellite-icon, .ground-station-icon{
+             /* Base styles - no color definition here */
+             opacity:.90;
+             pointer-events:none;
+             transition:transform .1s linear, fill 0.3s ease, stroke 0.3s ease;
+        }
+        /* Explicit fill AND stroke for each state to drive currentColor in symbol */
+        .satellite-icon.civilian { fill: #cccccc; stroke: #cccccc; }
+        .satellite-icon.military { fill: #388e3c; stroke: #388e3c; }
+        .satellite-icon.broken   { fill: #d32f2f; stroke: #d32f2f; }
+
+        use.satellite-icon.unconnected:not(.broken){animation:blinkFade 2s infinite ease-in-out}
+        .ground-station-icon{stroke:#4caf50;fill:#4caf50; stroke-width:15px}
+
+        /* --- Other SVG --- */
+        .ground-station-range{fill:rgba(76,175,80,.1);stroke:rgba(76,175,80,.3);stroke-width:1;stroke-dasharray:5,5;pointer-events:none}
+        .earth{fill:#2a5cde; stroke:#8c9eff; stroke-width:0.5}
+        .earth-continents, .ocean-regions, .clouds { pointer-events: none; }
+        .continent-path { fill: #556b2f; opacity: 0.85; stroke: #3a4a20; stroke-width: 0.3; }
+        .ocean-path-1 { fill: #000035; opacity: 0.5; }
+        .ocean-path-2 { fill: #001045; opacity: 0.5; }
+        .ocean-path-3 { fill: #102055; opacity: 0.5; }
+        .cloud-icon { fill: #ffffff; opacity: 0.5; transition: transform 1s linear; }
+
+        .comm-link{stroke:#50a0b0;stroke-width:1px;stroke-dasharray:1,3;pointer-events:none;stroke-opacity:.65;transition:x1 .1s linear,y1 .1s linear,x2 .1s linear,y2 .1s linear,stroke-opacity .3s ease}
+        .comm-link.hidden{stroke-opacity:0}
+        .label-group { transition: transform 0.1s linear; }
+        .info-label{font-family:Arial,sans-serif;font-size:7px;fill:rgba(255,255,255,.8);pointer-events:none;text-anchor:start;user-select:none;}
+        .info-label tspan{dominant-baseline:hanging}
+        .info-pointer{stroke:rgba(255,255,255,.5);stroke-width:.5px;pointer-events:none;}
+        .debris-particle{fill:#a0a0a0;pointer-events:none;transition:cx 1s linear,cy 1s linear,r 1s ease-out,opacity 1s ease-out}
+        @keyframes blinkFade{0%,100%{opacity:.4}50%{opacity:1}}
+
+        /* --- Controls --- */
+        .controls-container{display:flex;flex-direction:column;align-items:center;gap:10px;background-color:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);width:90%;max-width:850px;margin-bottom:15px}
+        .controls-row{display:flex;flex-wrap:wrap;gap:15px;justify-content:center;align-items:flex-end;width:100%}
+        .control-group{display:flex;flex-direction:column;gap:5px}
+        .control-group label{font-size:.9em;color:#555}
+        .control-group input[type=number],.control-group input[type=range]{width:80px;padding:5px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box}
+        .control-group input[type=range]{width:120px;padding:0;height:20px;cursor:pointer}
+        button{padding:8px 15px;background-color:#007bff;color:#fff;border:none;border-radius:4px;cursor:pointer;transition:background-color .2s ease;height:30px}
+        button:hover{background-color:#0056b3}
+        #addMilitarySatBtn{background-color:#28a745}
+        #addMilitarySatBtn:hover{background-color:#218838}
+
+        /* --- Gauges --- */
+        #loadGauges{display:flex;flex-wrap:nowrap;justify-content:center;align-items:flex-end;gap:15px;width:90%;max-width:850px;margin-top:10px;padding:10px;background-color:#e9e9e9;border-radius:5px;overflow-x:auto;}
+        .gauge-container{display:flex;flex-direction:column;align-items:center;width:auto;}
+        .gauge-bar-outer{width:15px;height:60px;background-color:#ccc;border:1px solid #999;position:relative;overflow:hidden;border-radius:3px}
+        .gauge-bar-inner{background-color:#4caf50;width:100%;height:0%;position:absolute;bottom:0;left:0;transition:height .2s ease-out}
+        .gauge-bar-inner.full{background-color:#f44336}
+        .gauge-label{font-size:9px;color:#333;margin-top:3px;white-space:nowrap}
+        #summaryGaugeContainer { border-right: 2px solid #aaa; padding-right: 15px; display: flex; flex-direction: column; align-items: center; height: auto;}
+        #summaryGaugeBarOuter { width: 25px; height: 60px; background-color:#bbb; border: 1px solid #777; position: relative; overflow: hidden; border-radius: 3px; margin-bottom: 2px;}
+        #summaryLoadInner { background-color: #ffc107; width: 100%; height: 0%; position: absolute; bottom: 0; left: 0; transition: height 0.2s ease-out; z-index: 1;}
+        .summary-marker { position: absolute; width: 100%; height: 2px; left: 0; z-index: 2; transition: bottom 0.3s ease-out; }
+        #summaryMaxMarker { background-color: #d32f2f; }
+        #summaryMinMarker { background-color: #1976d2; }
+        #summaryGaugeLabels { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: #333; margin-top: 3px; }
+        #summaryGaugeLabels span { line-height: 1.1; }
+
+        /* --- Status --- */
+        #status{margin-top:10px;font-size:.9em;color:#333;min-height:20px;text-align:center;width:100%}
+        #speedLabel{font-size:.9em;color:#555;margin-left:5px;min-width:50px;text-align:right}
     </style>
 </head>
 <body>
 
-    <h1>Satellite Communication Simulation</h1>
+    <h1>Satellite Simulation - Final Corrected</h1>
 
     <div class="simulation-container">
         <svg id="simulationArea">
-            <circle cx="50%" cy="50%" r="30" fill="#3d5afe" />
+             <defs>
+                 <symbol id="sputnik-icon" viewBox="-7 -8 19 16"> <circle cx="0" cy="0" r="6" stroke="none"/>
+                     <line x1="4.6" y1="-3.9" x2="14.5" y2="-7" stroke-width="1.5"/>
+                     <line x1="6"   y1="0"   x2="14" y2="0"  stroke-width="1.5"/>
+                     <line x1="4.6" y1="3.9"  x2="14.5" y2="7"  stroke-width="1.5"/>
+                 </symbol>
+                 {/* Antenna Icon (unchanged) */}
+                 <symbol id="antenna-icon" viewBox="-10 -15 20 30"> <path d="M -9 0 A 10 10 0 0 1 9 0" stroke="currentColor" stroke-width="2"/> <line x1="0" y1="0" x2="0" y2="15" stroke="currentColor" stroke-width="2"/> <line x1="-4" y1="15" x2="4" y2="15" stroke="currentColor" stroke-width="2.5"/> <line x1="-3" y1="7" x2="3" y2="7" stroke="currentColor" stroke-width="1.5"/> <circle cx="0" cy="-3" r="1.5" fill="currentColor"/> </symbol>
+                 {/* Cloud Icon (unchanged) */}
+                 <symbol id="cloud-icon" viewBox="0 0 32 20"> <path d="M 5 15 A 5 5 0 0 1 15 15 A 6 6 0 0 1 25 15 A 5 5 0 0 1 30 18 H 2 A 5 5 0 0 1 5 15 Z" /> <circle cx="10" cy="10" r="6"/> <circle cx="20" cy="12" r="8"/> </symbol>
+                 {/* Clip Path for Earth (unchanged) */}
+                 <clipPath id="earthClip"> <circle id="earthClipCircle" cx="0" cy="0" r="92"></circle> </clipPath>
+            </defs>
 
-            </svg>
+            <circle id="earthCircle" class="earth" />
+            <g id="oceanRegionsGroup" class="ocean-regions" clip-path="url(#earthClip)"> <path class="ocean-path-1" d="M -92 -92 H 92 V 20 C 0 50, -40 60, -92 30 Z" /> <path class="ocean-path-2" d="M -92 30 C -40 60, 0 50, 92 20 V 92 H -92 Z" /> <path class="ocean-path-3" d="M 10 -50 C 40 -70, 80 -60, 92 -30 V 20 C 0 50, 10 -5, 10 -50 Z" /> </g>
+            <g id="earthContinentsGroup" class="earth-continents" clip-path="url(#earthClip)"> <path class="continent-path" d="M -75 -55 C -50 -65, 10 -70, 30 -50 S 50 -10, 45 15 C 40 40, 15 55, -20 65 C -50 75, -80 70, -90 45 S -100 -10, -85 -40 C -80 -55, -80 -60, -75 -55 Z M -5 0 C 5 -15, 25 -10, 35 10 C 45 30, 35 50, 10 60 C -10 68, -35 60, -45 40 C -55 20, -45 -10, -25 -15 C -15 -20, -10 -10, -5 0 Z M 48 35 C 58 25, 78 30, 80 45 C 82 60, 65 75, 48 70 C 35 67, 38 45, 48 35 Z M 15 -70 C 25 -78, 45 -75, 55 -60 C 65 -50, 62 -35, 50 -25 C 35 -12, 15 -20, 5 -35 C -10 -55, 0 -65, 15 -70 Z M -65 70 C -55 80, -35 85, -25 75 C -15 65, -25 60, -45 63 C -55 65, -70 68, -65 70 Z M 60 -70 C 75 -75, 90 -65, 90 -50 C 90 -35, 75 -25, 60 -35 C 50 -45, 50 -60, 60 -70 Z" /> <circle class="continent-path" cx="-70" cy="10" r="3" /> <ellipse class="continent-path" cx="65" cy="60" rx="5" ry="3" transform="rotate(-20 65 60)" /> <path class="continent-path" d="M 25 -55 q 5 -5 10 0 q 5 5 0 10 q -5 5 -10 0 q -5 -5 0 -10 z" /> </g>
+            <g id="cloudsGroup" class="clouds" clip-path="url(#earthClip)"></g>
+            <g id="commLinksGroup"></g> <g id="debrisGroup"></g> <g id="stationIconsGroup"></g> <g id="satelliteIconsGroup"></g> <g id="infoLabelsGroup"></g>
+        </svg>
     </div>
 
-    <div class="controls">
-        <button id="addSatelliteBtn">Add Satellite</button>
-
-        <div class="control-group">
-            <label for="gsCapacity">New Station Capacity:</label>
-            <input type="number" id="gsCapacity" value="2" min="1">
-        </div>
-         <div class="control-group">
-            <label for="gsRange">New Station Range (px):</label>
-            <input type="number" id="gsRange" value="150" min="50" step="10">
-        </div>
-        <button id="addStationBtn">Add Ground Station (Random Pos)</button>
+     <div class="controls-container">
+         <div class="controls-row"> <button id="addSatelliteBtn">Add Civ Sat</button> <button id="addMilitarySatBtn">Add Mil Sat</button> <div class="control-group"><label for="gsCapacity">Cap:</label><input type="number" id="gsCapacity" value="2" min="1"></div> <div class="control-group"><label for="gsRange">Range:</label><input type="number" id="gsRange" value="200" min="50" step="10"></div> <button id="addStationBtn">Add Station</button> </div>
+         <div class="controls-row"> <div class="control-group"><label for="speedSlider">Speed:</label><input type="range" id="speedSlider" min="0.25" max="4" step="0.25" value="1"></div> <span id="speedLabel">1.0x</span> </div>
     </div>
 
-    <div id="status">Status: Initializing...</div>
+     <div id="loadGauges">
+         <div id="summaryGaugeContainer">
+             <div id="summaryGaugeBarOuter">
+                 <div id="summaryLoadInner"></div>
+                 <div id="summaryMaxMarker" class="summary-marker" title="Max Load"></div>
+                 <div id="summaryMinMarker" class="summary-marker" title="Min Load"></div>
+             </div>
+             <div id="summaryGaugeLabels">
+                  <span id="summaryCurrentLabel">0</span>
+                  </div>
+         </div>
+     </div>
+
+     <div id="status">Status: Initializing...</div>
 
     <script>
-        const svgNS = "http://www.w3.org/2000/svg";
-        const svgArea = document.getElementById('simulationArea');
-        const statusDiv = document.getElementById('status');
-        const addSatelliteBtn = document.getElementById('addSatelliteBtn');
-        const addStationBtn = document.getElementById('addStationBtn');
-        const gsCapacityInput = document.getElementById('gsCapacity');
-        const gsRangeInput = document.getElementById('gsRange');
+        // Global variable declarations...
+        const svgNS = "http://www.w3.org/2000/svg"; const svgArea = document.getElementById('simulationArea'); const earthCircle = document.getElementById('earthCircle'); const infoLabelsGroup = document.getElementById('infoLabelsGroup'); const commLinksGroup = document.getElementById('commLinksGroup'); const debrisGroup = document.getElementById('debrisGroup'); const satelliteIconsGroup = document.getElementById('satelliteIconsGroup'); const stationIconsGroup = document.getElementById('stationIconsGroup'); const loadGaugesDiv = document.getElementById('loadGauges'); const statusDiv = document.getElementById('status'); const addSatelliteBtn = document.getElementById('addSatelliteBtn'); const addMilitarySatBtn = document.getElementById('addMilitarySatBtn'); const addStationBtn = document.getElementById('addStationBtn'); const gsCapacityInput = document.getElementById('gsCapacity'); const gsRangeInput = document.getElementById('gsRange'); const speedSlider = document.getElementById('speedSlider'); const speedLabel = document.getElementById('speedLabel');
+        const earthContinentsGroup = document.getElementById('earthContinentsGroup'); const earthClipCircle = document.getElementById('earthClipCircle'); const oceanRegionsGroup = document.getElementById('oceanRegionsGroup'); const cloudsGroup = document.getElementById('cloudsGroup');
+        const summaryLoadInner = document.getElementById('summaryLoadInner'); const summaryMaxMarker = document.getElementById('summaryMaxMarker'); const summaryMinMarker = document.getElementById('summaryMinMarker'); const summaryCurrentLabel = document.getElementById('summaryCurrentLabel');
 
         let simulationWidth, simulationHeight, centerX, centerY;
-        let satellites = [];
-        let groundStations = [];
-        let commLinks = []; // Store references to line elements for easy removal/update
-        let satelliteIdCounter = 0;
-        let stationIdCounter = 0;
-        const SATELLITE_SIZE = 5;
-        const STATION_SIZE = 8; // Size of the square/triangle
-        const SIMULATION_INTERVAL = 100; // ms between updates
+        let satellites = []; let groundStations = []; let activeDebris = []; let clouds = [];
+        let satelliteIdCounter = 0; let stationIdCounter = 0; let cloudIdCounter = 0;
+        let simulationTimerId = null;
+        let totalSystemCapacity = 0; let maxRecordedLoad = 0; let minRecordedLoad = 0; let isFirstLoadUpdate = true;
 
-        function resizeSimulation() {
-            const rect = svgArea.getBoundingClientRect();
-            simulationWidth = rect.width;
-            simulationHeight = rect.height;
-            centerX = simulationWidth / 2;
-            centerY = simulationHeight / 2;
+        // --- Constants ---
+        const SATELLITE_ICON_SCALE = 0.03; const STATION_ICON_SCALE = 0.03; const EARTH_RADIUS = 92; const STATION_PLACEMENT_OFFSET = 4.5; const BASE_SIMULATION_INTERVAL = 100; let currentSimulationInterval = BASE_SIMULATION_INTERVAL; const SATELLITE_BREAKDOWN_CHANCE = 0.0008; const BROKEN_DURATION_SECONDS = 15; const BROKEN_DURATION_TICKS = () => (BROKEN_DURATION_SECONDS*1000)/currentSimulationInterval; const DEBRIS_PARTICLES = 4; const DEBRIS_DURATION_MS = 3000; const DEBRIS_MAX_DRIFT = 15; const DEBRIS_INITIAL_SIZE = 2; const LABEL_OFFSET_X = 4; /* Further Reduced */ const LABEL_OFFSET_Y = -4; /* Further Reduced */ const LABEL_LINE_HEIGHT = "1.2em"; const ORBITAL_SPEED_CONSTANT = 34; const NUM_INITIAL_CLOUDS = 8; const CLOUD_SCALE = 0.8; const CLOUD_MIN_SPEED = 0.1; const CLOUD_MAX_SPEED = 0.3;
 
-             // Update Earth position if needed
-            const earth = svgArea.querySelector('circle[fill="#3d5afe"]');
-            if (earth) {
-                earth.setAttribute('cx', centerX);
-                earth.setAttribute('cy', centerY);
-            }
+        // --- Utility Functions ---
+        function distance(x1,y1,x2,y2){return Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2))}
+        function dotProduct(x1,y1,x2,y2){return x1*x2+y1*y2}
+        function hasLineOfSight(sat,gs){const R=EARTH_RADIUS;const Cx=centerX;const Cy=centerY;const Sx=sat.x;const Sy=sat.y;const Gx=gs.x;const Gy=gs.y;const GSx=Sx-Gx;const GSy=Sy-Gy;const GCx=Cx-Gx;const GCy=Cy-Gy;const dotGCGS=dotProduct(GCx,GCy,GSx,GSy);const dotGSGS=dotProduct(GSx,GSy,GSx,GSy);if(dotGSGS<1e-9)return true;const t=dotGCGS/dotGSGS;let closestX,closestY;if(t<0){closestX=Gx;closestY=Gy}else if(t>1){closestX=Sx;closestY=Sy}else{closestX=Gx+t*GSx;closestY=Gy+t*GSy}const distCenterToSegment=distance(Cx,Cy,closestX,closestY);const epsilon=0.1;return distCenterToSegment>=R-epsilon}
 
-             // Re-position existing stations relative to new center if needed (optional)
-             // Simple approach: keep their absolute coordinates for now.
-             // More complex: recalculate based on relative positions.
+        // --- Core Functions ---
+        function resizeSimulation() { /* ... unchanged ... */ const rect=svgArea.getBoundingClientRect();simulationWidth=rect.width;simulationHeight=rect.height;centerX=simulationWidth/2;centerY=simulationHeight/2; earthCircle.setAttribute('cx',centerX);earthCircle.setAttribute('cy',centerY);earthCircle.setAttribute('r',EARTH_RADIUS); if(earthClipCircle){earthClipCircle.setAttribute('r',EARTH_RADIUS);} const centerTransform=`translate(${centerX}, ${centerY})`; if(earthContinentsGroup){earthContinentsGroup.setAttribute('transform',centerTransform);} if(oceanRegionsGroup){oceanRegionsGroup.setAttribute('transform',centerTransform);} if(cloudsGroup){cloudsGroup.setAttribute('transform',centerTransform);} groundStations.forEach(gs=>{const placementRadius=EARTH_RADIUS+STATION_PLACEMENT_OFFSET;gs.x=centerX+placementRadius*Math.cos(gs.angle);gs.y=centerY+placementRadius*Math.sin(gs.angle);gs.stationElement.setAttribute('transform',`translate(${gs.x},${gs.y}) scale(${STATION_ICON_SCALE}) rotate(${gs.angle*180/Math.PI+90})`);gs.rangeElement.setAttribute('cx',gs.x);gs.rangeElement.setAttribute('cy',gs.y);updateGroundStationLabelPointer(gs)}); satellites.forEach(sat=>{sat.x=centerX+sat.orbitRadius*Math.cos(sat.angle);sat.y=centerY+sat.orbitRadius*Math.sin(sat.angle);sat.element.setAttribute('transform',`translate(${sat.x},${sat.y}) scale(${SATELLITE_ICON_SCALE})`);updateSatelliteLabelPointer(sat)})}
+        function updateSatelliteLabelPointer(sat){/* Uses group transform */ sat.labelGroupElement.setAttribute('transform',`translate(${sat.x},${sat.y})`);}
+        function updateGroundStationLabelPointer(gs){/* Uses group transform */ gs.labelGroupElement.setAttribute('transform',`translate(${gs.x},${gs.y})`);}
+
+        function createSatellite(isMilitary = false) { /* ... unchanged ... */ try{satelliteIdCounter++; const id=`sat-${satelliteIdCounter}`; const shortId=`S${satelliteIdCounter}`; const minOrbitRadius=EARTH_RADIUS+50; const maxOrbitRadius=Math.min(centerX-EARTH_RADIUS,centerY-EARTH_RADIUS)*.8+minOrbitRadius; const orbitRadius=Math.random()*(maxOrbitRadius-minOrbitRadius)+minOrbitRadius; const initialAngle=Math.random()*2*Math.PI; const baseSpeed = ORBITAL_SPEED_CONSTANT/Math.pow(orbitRadius,1.5); const direction=(Math.random()<.5?1:-1); const satellite = {id: id, shortId: shortId, x: 0, y: 0, orbitRadius: orbitRadius, angle: initialAngle, baseSpeed: baseSpeed, direction: direction, type: isMilitary?'military':'civilian', priority: isMilitary?1:0, connectedToStationId: null, isBroken: false, breakdownTimer: 0, element: document.createElementNS(svgNS,'use'), labelGroupElement: document.createElementNS(svgNS,'g'), labelElement: document.createElementNS(svgNS,'text'), labelTspan1: document.createElementNS(svgNS,'tspan'), labelTspan2: document.createElementNS(svgNS,'tspan'), pointerElement: document.createElementNS(svgNS,'line'), commLinkElement: document.createElementNS(svgNS,'line')}; satellite.x=centerX+orbitRadius*Math.cos(initialAngle); satellite.y=centerY+orbitRadius*Math.sin(initialAngle); satellite.element.setAttribute('id', id); satellite.element.setAttribute('href', '#sputnik-icon'); satellite.element.classList.add('satellite-icon', satellite.type); satellite.element.setAttribute('transform', `translate(${satellite.x}, ${satellite.y}) scale(${SATELLITE_ICON_SCALE})`); satellite.labelGroupElement.setAttribute('id', `${id}-label-group`); satellite.labelGroupElement.classList.add('label-group'); satellite.labelElement.setAttribute('id',`${id}-label`); satellite.labelElement.classList.add('info-label'); satellite.labelElement.setAttribute('x', LABEL_OFFSET_X); satellite.labelElement.setAttribute('y', LABEL_OFFSET_Y); satellite.labelTspan1.textContent = `${shortId} ${isMilitary?'M':'C'}`; satellite.labelTspan1.setAttribute('dy', 0); satellite.labelTspan2.textContent = "Disconnected"; satellite.labelTspan2.setAttribute('dy', LABEL_LINE_HEIGHT); satellite.labelElement.appendChild(satellite.labelTspan1); satellite.labelElement.appendChild(satellite.labelTspan2); satellite.pointerElement.setAttribute('id',`${id}-pointer`); satellite.pointerElement.classList.add('info-pointer'); satellite.pointerElement.setAttribute('x1', 0); satellite.pointerElement.setAttribute('y1', 0); satellite.pointerElement.setAttribute('x2', LABEL_OFFSET_X); satellite.pointerElement.setAttribute('y2', LABEL_OFFSET_Y + parseFloat(LABEL_LINE_HEIGHT)*0.5); satellite.labelGroupElement.appendChild(satellite.pointerElement); satellite.labelGroupElement.appendChild(satellite.labelElement); satellite.commLinkElement.setAttribute('id',`${id}-comm`); satellite.commLinkElement.classList.add('comm-link','hidden'); satellite.commLinkElement.setAttribute('x1',satellite.x); satellite.commLinkElement.setAttribute('y1',satellite.y); satellite.commLinkElement.setAttribute('x2',satellite.x); satellite.commLinkElement.setAttribute('y2',satellite.y); updateSatelliteLabelPointer(satellite); satelliteIconsGroup.appendChild(satellite.element); commLinksGroup.appendChild(satellite.commLinkElement); infoLabelsGroup.appendChild(satellite.labelGroupElement); satellites.push(satellite); } catch (e) { console.error("Error creating satellite:", e); }}
+
+        function createGroundStation() { /* Updates total capacity */ try{stationIdCounter++; const id=`gs-${stationIdCounter}`; const shortId=`G${stationIdCounter}`; const angle=Math.random()*2*Math.PI; const placementRadius=EARTH_RADIUS+STATION_PLACEMENT_OFFSET; const x=centerX+placementRadius*Math.cos(angle); const y=centerY+placementRadius*Math.sin(angle); const capacity=parseInt(gsCapacityInput.value)||1; const range=parseInt(gsRangeInput.value)||100; const station={id: id, shortId: shortId, x: x, y: y, angle: angle, capacity: capacity, range: range, currentLoad: 0, connectedSatellites: [], rangeElement: document.createElementNS(svgNS,'circle'), stationElement: document.createElementNS(svgNS,'use'), labelGroupElement: document.createElementNS(svgNS,'g'), labelElement: document.createElementNS(svgNS,'text'), labelTspan1: document.createElementNS(svgNS,'tspan'), labelTspan2: document.createElementNS(svgNS,'tspan'), pointerElement: document.createElementNS(svgNS,'line'), gaugeContainerElement: null, gaugeBarInnerElement: null, gaugeLabelElement: null}; station.stationElement.setAttribute('id', id); station.stationElement.setAttribute('href', '#antenna-icon'); station.stationElement.classList.add('ground-station-icon'); station.stationElement.setAttribute('transform', `translate(${x}, ${y}) scale(${STATION_ICON_SCALE}) rotate(${angle * 180 / Math.PI + 90})`); station.rangeElement.setAttribute('id',`${id}-range`);station.rangeElement.setAttribute('cx',x);station.rangeElement.setAttribute('cy',y);station.rangeElement.setAttribute('r',range);station.rangeElement.setAttribute('class','ground-station-range');svgArea.insertBefore(station.rangeElement,earthCircle); station.labelGroupElement.setAttribute('id', `${id}-label-group`); station.labelGroupElement.classList.add('label-group'); station.labelElement.setAttribute('id',`${id}-label`); station.labelElement.classList.add('info-label'); station.labelElement.setAttribute('x', LABEL_OFFSET_X); station.labelElement.setAttribute('y', LABEL_OFFSET_Y); station.labelTspan1.textContent = `${shortId} ${station.currentLoad}/${station.capacity}`; station.labelTspan1.setAttribute('dy', 0); station.labelTspan2.textContent = "Idle"; station.labelTspan2.setAttribute('dy', LABEL_LINE_HEIGHT); station.labelElement.appendChild(station.labelTspan1); station.labelElement.appendChild(station.labelTspan2); station.pointerElement.setAttribute('id',`${id}-pointer`); station.pointerElement.classList.add('info-pointer'); station.pointerElement.setAttribute('x1', 0); station.pointerElement.setAttribute('y1', 0); station.pointerElement.setAttribute('x2', LABEL_OFFSET_X); station.pointerElement.setAttribute('y2', LABEL_OFFSET_Y + parseFloat(LABEL_LINE_HEIGHT)*0.5); updateGroundStationLabelPointer(station); stationIconsGroup.appendChild(station.stationElement); infoLabelsGroup.appendChild(station.labelGroupElement); station.gaugeContainerElement=document.createElement('div'); station.gaugeContainerElement.classList.add('gauge-container'); const outerBar=document.createElement('div'); outerBar.classList.add('gauge-bar-outer'); station.gaugeBarInnerElement=document.createElement('div'); station.gaugeBarInnerElement.classList.add('gauge-bar-inner'); outerBar.appendChild(station.gaugeBarInnerElement); station.gaugeLabelElement=document.createElement('span'); station.gaugeLabelElement.classList.add('gauge-label'); station.gaugeLabelElement.textContent=shortId; station.gaugeContainerElement.appendChild(outerBar); station.gaugeContainerElement.appendChild(station.gaugeLabelElement); if(loadGaugesDiv){loadGaugesDiv.appendChild(station.gaugeContainerElement);}else{console.error("loadGaugesDiv not found!")} groundStations.push(station); totalSystemCapacity+=capacity; updateSummaryGauge();}catch(e){console.error("Error creating ground station:",e);}}
+
+        function updateSatellites() { /* ... unchanged ... */ satellites.forEach(sat => { const speedMultiplier=BASE_SIMULATION_INTERVAL/currentSimulationInterval; const deltaAngle=sat.baseSpeed*speedMultiplier*sat.direction; sat.angle+=deltaAngle; sat.x=centerX+sat.orbitRadius*Math.cos(sat.angle); sat.y=centerY+sat.orbitRadius*Math.sin(sat.angle); sat.element.setAttribute('transform',`translate(${sat.x},${sat.y}) scale(${SATELLITE_ICON_SCALE})`); updateSatelliteLabelPointer(sat); if(!sat.commLinkElement.classList.contains('hidden')){sat.commLinkElement.setAttribute('x1',sat.x); sat.commLinkElement.setAttribute('y1',sat.y);} }); }
+
+        function updateCommunication() { // Updates summary gauge tracking + visuals
+             groundStations.forEach(gs=>{gs.currentLoad=0; gs.connectedSatellites=[]}); const activeSatellites=satellites.filter(s=>!s.isBroken); const processConnections=(satsToProcess)=>{satsToProcess.forEach(sat=>{sat.connectedToStationId=null;let bestStation=null;let minDistance=Infinity;for(const gs of groundStations){const dist=distance(sat.x,sat.y,gs.x,gs.y);if(dist<=gs.range&&gs.currentLoad<gs.capacity&&hasLineOfSight(sat,gs)){if(dist<minDistance){minDistance=dist;bestStation=gs}}}if(bestStation){sat.potentialConnection=bestStation.id}else{sat.potentialConnection=null}});satsToProcess.forEach(sat=>{if(sat.potentialConnection){const station=groundStations.find(gs=>gs.id===sat.potentialConnection);if(station&&station.currentLoad<station.capacity){sat.connectedToStationId=station.id;station.currentLoad++;station.connectedSatellites.push(sat.id)}delete sat.potentialConnection}})};
+             processConnections(activeSatellites.filter(s=>s.type==='military')); processConnections(activeSatellites.filter(s=>s.type==='civilian'));
+             activeSatellites.forEach(sat=>{let statusText="";let isConnected=sat.connectedToStationId!==null;sat.element.classList.toggle('unconnected',!isConnected&&!sat.isBroken);sat.commLinkElement.classList.toggle('hidden',!isConnected);if(isConnected){statusText="Connected";const gs=groundStations.find(g=>g.id===sat.connectedToStationId);if(gs){sat.commLinkElement.setAttribute('x2',gs.x);sat.commLinkElement.setAttribute('y2',gs.y)}else{sat.connectedToStationId=null;statusText="Disconnected";sat.commLinkElement.classList.add('hidden');sat.element.classList.add('unconnected')}}else{statusText="Disconnected"}sat.labelTspan2.textContent=statusText}); satellites.filter(s=>s.isBroken).forEach(sat=>{sat.commLinkElement.classList.add('hidden');sat.element.classList.add('broken')});
+
+             // Update Individual/Summary Gauges & Labels
+             let currentTotalLoad = 0;
+             groundStations.forEach(gs=>{ currentTotalLoad += gs.currentLoad; gs.labelTspan1.textContent=`${gs.shortId} ${gs.currentLoad}/${gs.capacity}`; let gsStatusText="Idle"; if(gs.currentLoad>0&&gs.currentLoad<gs.capacity)gsStatusText="Active";else if(gs.currentLoad===gs.capacity)gsStatusText="Full"; gs.labelTspan2.textContent=gsStatusText; const loadPercent=(gs.capacity>0)?(gs.currentLoad/gs.capacity)*100:0; if(gs.gaugeBarInnerElement){gs.gaugeBarInnerElement.style.height=`${loadPercent}%`; gs.gaugeBarInnerElement.classList.toggle('full',gs.currentLoad===gs.capacity&&gs.capacity>0);} });
+             // Update Min/Max Tracking
+             if(isFirstLoadUpdate&&groundStations.length>0){minRecordedLoad=currentTotalLoad; isFirstLoadUpdate=false;}else if(groundStations.length>0){minRecordedLoad=Math.min(minRecordedLoad,currentTotalLoad);}
+             maxRecordedLoad=Math.max(maxRecordedLoad,currentTotalLoad);
+             updateSummaryGauge(currentTotalLoad);
+             updateStatus();
         }
 
-        function createSatellite() {
-            satelliteIdCounter++;
-            const id = `sat-${satelliteIdCounter}`;
-            const orbitRadius = Math.random() * (Math.min(centerX, centerY) * 0.8) + 50; // Random radius
-            const initialAngle = Math.random() * 2 * Math.PI;
-            const speed = (Math.random() * 0.02 + 0.005) * (Math.random() < 0.5 ? 1 : -1) ; // Random speed and direction
-
-            const satellite = {
-                id: id,
-                x: centerX + orbitRadius * Math.cos(initialAngle),
-                y: centerY + orbitRadius * Math.sin(initialAngle),
-                orbitRadius: orbitRadius,
-                angle: initialAngle,
-                speed: speed, // radians per interval
-                connectedToStationId: null, // ID of the station it's connected to
-                element: document.createElementNS(svgNS, 'circle')
-            };
-
-            satellite.element.setAttribute('id', id);
-            satellite.element.setAttribute('r', SATELLITE_SIZE);
-            satellite.element.setAttribute('class', 'satellite');
-            satellite.element.setAttribute('cx', satellite.x);
-            satellite.element.setAttribute('cy', satellite.y);
-            svgArea.appendChild(satellite.element);
-            satellites.push(satellite);
-            console.log(`Added ${id} at (${satellite.x.toFixed(1)}, ${satellite.y.toFixed(1)})`);
+        function updateSummaryGauge(currentTotalLoad = -1) { // Simplified Label
+            if(currentTotalLoad===-1){currentTotalLoad=groundStations.reduce((sum, gs)=>sum + gs.currentLoad, 0);}
+            const capacity=totalSystemCapacity; const currentPercent=capacity>0?(currentTotalLoad/capacity)*100:0; const maxPercent=capacity>0?(maxRecordedLoad/capacity)*100:0; const minLoadToUse=isFirstLoadUpdate?0:minRecordedLoad; const minPercent=capacity>0?(minLoadToUse/capacity)*100:0;
+            if(summaryLoadInner)summaryLoadInner.style.height=`${currentPercent}%`;
+            if(summaryMaxMarker)summaryMaxMarker.style.bottom=`${Math.min(100,maxPercent)}%`;
+            if(summaryMinMarker)summaryMinMarker.style.bottom=`${Math.min(100,minPercent)}%`;
+            // Only update current load label text
+            if(summaryCurrentLabel)summaryCurrentLabel.textContent=`${currentTotalLoad}`;
+             // Update title attributes for hover info (optional)
+             if(summaryMaxMarker) summaryMaxMarker.title = `Max Load: ${maxRecordedLoad}`;
+             if(summaryMinMarker) summaryMinMarker.title = `Min Load: ${minLoadToUse}`;
         }
 
-        function createGroundStation() {
-            stationIdCounter++;
-            const id = `gs-${stationIdCounter}`;
-            // Place randomly, but not too close to the edge or center
-            const margin = STATION_SIZE + 20;
-            const x = Math.random() * (simulationWidth - 2 * margin) + margin;
-            const y = Math.random() * (simulationHeight - 2 * margin) + margin;
-            const capacity = parseInt(gsCapacityInput.value) || 1;
-            const range = parseInt(gsRangeInput.value) || 100;
+        // --- Cloud Functions ---
+        function createCloud() { /* ... unchanged ... */ cloudIdCounter++; const id = `cloud-${cloudIdCounter}`; const initialY = (Math.random() * 2 - 1) * EARTH_RADIUS * 0.8; const initialX = -EARTH_RADIUS - Math.random() * 50; const speed = (Math.random() * (CLOUD_MAX_SPEED - CLOUD_MIN_SPEED) + CLOUD_MIN_SPEED); const cloud = { id: id, x: initialX, y: initialY, baseSpeed: speed, element: document.createElementNS(svgNS, 'use') }; cloud.element.setAttribute('id', id); cloud.element.setAttribute('href', '#cloud-icon'); cloud.element.classList.add('cloud-icon'); cloud.element.setAttribute('transform', `translate(${cloud.x}, ${cloud.y}) scale(${CLOUD_SCALE})`); cloudsGroup.appendChild(cloud.element); clouds.push(cloud); }
+        function updateClouds() { /* ... unchanged ... */ const speedMultiplier = BASE_SIMULATION_INTERVAL / currentSimulationInterval; const rightBoundary = EARTH_RADIUS + 50; const leftBoundary = -EARTH_RADIUS - 50; for (let i = clouds.length - 1; i >= 0; i--) { const cloud = clouds[i]; cloud.x += cloud.baseSpeed * speedMultiplier; if (cloud.x > rightBoundary) { cloud.y = (Math.random() * 2 - 1) * EARTH_RADIUS * 0.8; cloud.x = leftBoundary - Math.random() * 30; cloud.baseSpeed = (Math.random() * (CLOUD_MAX_SPEED - CLOUD_MIN_SPEED) + CLOUD_MIN_SPEED); cloud.element.style.transition = 'none'; cloud.element.setAttribute('transform', `translate(${cloud.x}, ${cloud.y}) scale(${CLOUD_SCALE})`); void cloud.element.offsetWidth; cloud.element.style.transition = 'transform 1s linear'; } else { cloud.element.setAttribute('transform', `translate(${cloud.x}, ${cloud.y}) scale(${CLOUD_SCALE})`); } } }
 
-            const station = {
-                id: id,
-                x: x,
-                y: y,
-                capacity: capacity, // Max simultaneous connections
-                range: range,
-                currentLoad: 0, // Number of active connections
-                connectedSatellites: [], // List of connected satellite IDs
-                rangeElement: document.createElementNS(svgNS, 'circle'),
-                stationElement: document.createElementNS(svgNS, 'rect') // Use a rectangle for station
-            };
-
-            // Draw Range Circle
-            station.rangeElement.setAttribute('id', `${id}-range`);
-            station.rangeElement.setAttribute('cx', x);
-            station.rangeElement.setAttribute('cy', y);
-            station.rangeElement.setAttribute('r', range);
-            station.rangeElement.setAttribute('class', 'ground-station-range');
-            svgArea.insertBefore(station.rangeElement, svgArea.firstChild); // Draw range behind stations/sats
-
-            // Draw Station Square
-            station.stationElement.setAttribute('id', id);
-            // Draw rect from top-left corner, so adjust x,y to center it visually
-            station.stationElement.setAttribute('x', x - STATION_SIZE / 2);
-            station.stationElement.setAttribute('y', y - STATION_SIZE / 2);
-            station.stationElement.setAttribute('width', STATION_SIZE);
-            station.stationElement.setAttribute('height', STATION_SIZE);
-            station.stationElement.setAttribute('class', 'ground-station');
-            svgArea.appendChild(station.stationElement); // Draw station on top
-
-            groundStations.push(station);
-            console.log(`Added ${id} at (${x.toFixed(1)}, ${y.toFixed(1)}) Cap: ${capacity}, Range: ${range}`);
-        }
-
-        function updateSatellites() {
-            satellites.forEach(sat => {
-                // Update position (simple circular orbit)
-                sat.angle += sat.speed;
-                sat.x = centerX + sat.orbitRadius * Math.cos(sat.angle);
-                sat.y = centerY + sat.orbitRadius * Math.sin(sat.angle);
-
-                // Update SVG element position
-                sat.element.setAttribute('cx', sat.x);
-                sat.element.setAttribute('cy', sat.y);
-            });
-        }
-
-        function distance(x1, y1, x2, y2) {
-            return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-        }
-
-        function updateCommunication() {
-            // 0. Reset station loads before recalculating connections
-            groundStations.forEach(gs => {
-                gs.currentLoad = 0;
-                gs.connectedSatellites = [];
-            });
-             // Clear existing communication lines from SVG
-            commLinks.forEach(link => link.remove());
-            commLinks = []; // Clear the array
-
-            // 1. Check existing connections and attempt new ones
-            satellites.forEach(sat => {
-                let wasConnected = sat.connectedToStationId !== null;
-                let currentStation = null;
-                if (wasConnected) {
-                    currentStation = groundStations.find(gs => gs.id === sat.connectedToStationId);
-                }
-
-                // Disconnect if station doesn't exist, is out of range, or becomes full in this step
-                if (wasConnected && (!currentStation || distance(sat.x, sat.y, currentStation.x, currentStation.y) > currentStation.range)) {
-                   console.log(`${sat.id} disconnected from ${sat.connectedToStationId} (out of range or station removed)`);
-                   sat.connectedToStationId = null;
-                   wasConnected = false; // Ensure we try to find a new station
-                }
-
-                // 2. If not connected, try to find a suitable station
-                if (sat.connectedToStationId === null) {
-                    let foundStation = false;
-                    // Iterate through stations, find first available one in range
-                    for (const gs of groundStations) {
-                        const dist = distance(sat.x, sat.y, gs.x, gs.y);
-                        if (dist <= gs.range && gs.currentLoad < gs.capacity) {
-                            // Connect!
-                            sat.connectedToStationId = gs.id;
-                            gs.currentLoad++;
-                            gs.connectedSatellites.push(sat.id);
-                            console.log(`${sat.id} connected to ${gs.id}`);
-                            foundStation = true;
-                            break; // Connect to the first one found (simple strategy)
-                        }
-                    }
-                     if (!foundStation && wasConnected) {
-                         // This case means it *was* connected, but the station got overloaded *before* this satellite was processed again this tick.
-                         // The previous disconnect logic handles out-of-range.
-                         console.log(`${sat.id} could not reconnect to ${currentStation?.id} (possibly full), now searching.`);
-                     }
-                } else {
-                    // If already connected, ensure the station load is counted
-                     if (currentStation) {
-                        // We need to make sure this connection doesn't overload the station *now*
-                        if(currentStation.currentLoad < currentStation.capacity) {
-                           currentStation.currentLoad++;
-                           currentStation.connectedSatellites.push(sat.id);
-                           // console.log(`${sat.id} maintains connection to ${currentStation.id}`);
-                        } else {
-                             // Station became full this tick before we re-affirmed this connection
-                             console.log(`${sat.id} disconnected from ${currentStation.id} (became full this tick)`);
-                             sat.connectedToStationId = null;
-                        }
-                    } else {
-                         // Should not happen if disconnect logic is correct, but safety check
-                         sat.connectedToStationId = null;
-                    }
-                }
-            });
-
-             // 3. Draw communication lines for active connections
-            satellites.forEach(sat => {
-                if (sat.connectedToStationId) {
-                    const gs = groundStations.find(g => g.id === sat.connectedToStationId);
-                    if (gs) { // Check if station still exists
-                        const line = document.createElementNS(svgNS, 'line');
-                        line.setAttribute('x1', sat.x);
-                        line.setAttribute('y1', sat.y);
-                        line.setAttribute('x2', gs.x);
-                        line.setAttribute('y2', gs.y);
-                        line.setAttribute('class', 'comm-link');
-                        svgArea.appendChild(line); // Draw line on top
-                        commLinks.push(line); // Add to array for cleanup
-                    } else {
-                         // Satellite thinks it's connected, but station is gone. Correct this.
-                         sat.connectedToStationId = null;
-                    }
-                }
-            });
-
-            updateStatus();
-        }
-
-        function updateStatus() {
-            let connectedCount = satellites.filter(s => s.connectedToStationId !== null).length;
-            let stationLoads = groundStations.map(gs => `${gs.id}: ${gs.currentLoad}/${gs.capacity}`).join(', ');
-            statusDiv.textContent = `Satellites: ${satellites.length} (${connectedCount} connected). Stations: ${groundStations.length}. Loads: [${stationLoads || 'N/A'}]`;
-        }
-
-        function simulationLoop() {
-            updateSatellites();
-            updateCommunication(); // Includes drawing links and updating status
-        }
+        // --- Debris/Broken/Status/Loop/Speed Functions --- (Unchanged)
+        function createDebris(brokenSat){const baseAngle=Math.atan2(brokenSat.y-centerY,brokenSat.x-centerX);for(let i=0;i<DEBRIS_PARTICLES;i++){const debris={element:document.createElementNS(svgNS,'circle'),x:brokenSat.x,y:brokenSat.y,dx:(Math.cos(baseAngle+(Math.random()-.5)*.8))*(Math.random()*.5+.1),dy:(Math.sin(baseAngle+(Math.random()-.5)*.8))*(Math.random()*.5+.1),life:DEBRIS_DURATION_MS,startTime:Date.now()};debris.element.setAttribute('cx',debris.x);debris.element.setAttribute('cy',debris.y);debris.element.setAttribute('r',DEBRIS_INITIAL_SIZE*(Math.random()*.5+.75));debris.element.classList.add('debris-particle');debrisGroup.appendChild(debris.element);activeDebris.push(debris);}}
+        function updateDebris(){const now=Date.now();for(let i=activeDebris.length-1;i>=0;i--){const debris=activeDebris[i];const elapsedTime=now-debris.startTime;if(elapsedTime>=debris.life){debris.element.remove();activeDebris.splice(i,1)}else{const speedMultiplier=BASE_SIMULATION_INTERVAL/currentSimulationInterval;debris.x+=debris.dx*speedMultiplier;debris.y+=debris.dy*speedMultiplier;debris.element.setAttribute('cx',debris.x);debris.element.setAttribute('cy',debris.y);const lifeFraction=elapsedTime/debris.life;debris.element.style.opacity=1-lifeFraction;const currentSize=DEBRIS_INITIAL_SIZE*(1-lifeFraction*.7);debris.element.setAttribute('r',Math.max(.1,currentSize));}}}
+        function handleBrokenSatellites(){for(let i=satellites.length-1;i>=0;i--){const sat=satellites[i];if(sat.isBroken){sat.breakdownTimer--;if(sat.breakdownTimer<=0){sat.element.remove();sat.labelGroupElement.remove();sat.commLinkElement.remove();satellites.splice(i,1)}}else{if(Math.random()<SATELLITE_BREAKDOWN_CHANCE){sat.isBroken=true;sat.breakdownTimer=BROKEN_DURATION_TICKS();sat.connectedToStationId=null;sat.element.classList.add('broken');sat.element.classList.remove('unconnected');sat.labelTspan2.textContent="Broken";sat.commLinkElement.classList.add('hidden');createDebris(sat);}}}}
+        function updateStatus(){const activeSats=satellites.filter(s=>!s.isBroken);let connectedCount=activeSats.filter(s=>s.connectedToStationId!==null).length;let militaryCount=activeSats.filter(s=>s.type==='military').length;let civilianCount=activeSats.filter(s=>s.type==='civilian').length;let brokenCount=satellites.length-activeSats.length;let stationLoads=groundStations.map(gs=>`${gs.shortId}(${gs.connectedSatellites.length}/${gs.capacity})`).join('; ');statusDiv.textContent=`Satellites: ${civilianCount} Civ + ${militaryCount} Mil (${connectedCount} connected). Broken: ${brokenCount}. Stations: ${groundStations.length}. Loads: [${stationLoads||'N/A'}]`;}
+        function simulationLoop() { handleBrokenSatellites(); updateDebris(); updateClouds(); updateSatellites(); updateCommunication(); }
+        function startSimulation(){if(simulationTimerId){clearInterval(simulationTimerId)}simulationTimerId=setInterval(simulationLoop,currentSimulationInterval)}
+        function updateSpeed(){const speedMultiplier=parseFloat(speedSlider.value);currentSimulationInterval=BASE_SIMULATION_INTERVAL/speedMultiplier;speedLabel.textContent=`${speedMultiplier.toFixed(2)}x`;startSimulation()}
 
         // --- Initialization ---
-        addSatelliteBtn.addEventListener('click', createSatellite);
-        addStationBtn.addEventListener('click', createGroundStation);
-        window.addEventListener('resize', resizeSimulation); // Adjust layout on resize
-
-        // Initial setup
-        resizeSimulation(); // Set initial dimensions
-        // Add some initial elements
-        createSatellite();
-        createSatellite();
-        createGroundStation(); // Add one with default settings
-
-        // Start the simulation loop
-        setInterval(simulationLoop, SIMULATION_INTERVAL);
-        console.log("Simulation initialized.");
-        updateStatus(); // Initial status message
+        try { addSatelliteBtn.addEventListener('click',()=>createSatellite(false)); addMilitarySatBtn.addEventListener('click',()=>createSatellite(true)); addStationBtn.addEventListener('click',createGroundStation); window.addEventListener('resize',resizeSimulation); speedSlider.addEventListener('input',updateSpeed); resizeSimulation(); createGroundStation(); createGroundStation(); createGroundStation(); createSatellite(false); createSatellite(false); createSatellite(false); createSatellite(false); createSatellite(true); createSatellite(true); for(let i=0;i<NUM_INITIAL_CLOUDS;i++){createCloud();} isFirstLoadUpdate=true;updateSummaryGauge();updateStatus(); startSimulation(); } catch (e) { console.error("Error during initialization:", e); statusDiv.textContent = "Error during initialization. Check console."; }
 
     </script>
 

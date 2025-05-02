@@ -174,7 +174,7 @@ class Satellite:
             current_body_color = BLINK_RED if self.blink_on else DAMAGED_SATELLITE_COLOR
         elif self.transferring: # Indicate transferring by blinking white
              if pygame.time.get_ticks() // 250 % 2 == 0:
-                  current_body_color = WHITE
+                  current_body_color = self.color
 
         pygame.draw.circle(surface, current_body_color, (x, y), body_radius)
 

@@ -13,6 +13,8 @@ import json
 
 active_losses = {}
 connection_loss_log = []
+REPORT_FILENAME = "simulation_report.txt"
+
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -162,7 +164,7 @@ def generate_report(satellites_list, stations_list, conn_loss_log): # Accept lis
     destroyed_sats_log = Satellite.destroyed_satellites_log
     # Station damage log (already iterated above for data loss)
 
-    report_filename = f"simulation_report_{time.strftime('%Y%m%d_%H%M%S')}.txt"
+    report_filename = REPORT_FILENAME
     with open(report_filename, "w", encoding="utf-8") as file:
         report_text = "Simulation Report\n"
         report_text += "=====================\n"
