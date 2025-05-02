@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Communication Simulation</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #333;
+        }
+        .simulation-container {
+            position: relative;
+            width: 80vw; /* Adjust as needed */
+            max-width: 800px;
+            height: 60vh; /* Adjust as needed */
+            max-height: 600px;
+            border: 2px solid #555;
+            background-color: #000020; /* Dark space background */
+            overflow: hidden; /* Keep elements inside */
+            margin-bottom: 20px;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        /* Styling SVG elements via classes */
+        .satellite {
+            fill: #00bcd4; /* Cyan */
+            stroke: #ffffff;
+            stroke-width: 1;
+            transition: cx 0.1s linear, cy 0.1s linear; /* Smooth movement */
+        }
+        .ground-station {
+            fill: #4caf50; /* Green */
+            stroke: #ffffff;
+            stroke-width: 1;
+        }
+         .ground-station-range {
+            fill: rgba(76, 175, 80, 0.1); /* Transparent green */
+            stroke: rgba(76, 175, 80, 0.3);
+            stroke-width: 1;
+            stroke-dasharray: 5, 5;
+        }
+        .comm-link {
+            stroke: #ffeb3b; /* Yellow */
+            stroke-width: 1.5;
+            stroke-dasharray: 4, 2;
+            pointer-events: none; /* Prevent lines interfering with clicks */
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label {
+            font-size: 0.9em;
+            color: #555;
+        }
+        .control-group input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #333;
+            min-height: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Satellite Communication Simulation</h1>
+
+    <div class="simulation-container">
+        <svg id="simulationArea">
+            <circle cx="50%" cy="50%" r="30" fill="#3d5afe" />
+
+            </svg>
+    </div>
+
+    <div class="controls">
+        <button id="addSatelliteBtn">Add Satellite</button>
+
+        <div class="control-group">
+            <label for="gsCapacity">New Station Capacity:</label>
+            <input type="number" id="gsCapacity" value="2" min="1">
+        </div>
+         <div class="control-group">
+            <label for="gsRange">New Station Range (px):</label>
+            <input type="number" id="gsRange" value="150" min="50" step="10">
+        </div>
+        <button id="addStationBtn">Add Ground Station (Random Pos)</button>
+    </div>
+
+    <div id="status">Status: Initializing...</div>
+
+    <script>
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svgArea = document.getElementById('simulationArea');
+        const statusDiv = document.getElementById('status');
+        const addSatelliteBtn = document.getElementById('addSatelliteBtn');
+        const addStationBtn = document.getElementById('addStationBtn');
+        const gsCapacityInput = document.getElementById('gsCapacity');
+        const gsRangeInput = document.getElementById('gsRange');
+
+        let simulationWidth, simulationHeight, centerX, centerY;
+        let satellites = [];
+        let groundStations = [];
+        let commLinks = []; // Store references to line elements for easy removal/update
+        let satelliteIdCounter = 0;
+        let stationIdCounter = 0;
+        const SATELLITE_SIZE = 5;
+        const STATION_SIZE = 8; // Size of the square/triangle
+        const SIMULATION_INTERVAL = 100; // ms between updates
+
+        function resizeSimulation() {
+            const rect = svgArea.getBoundingClientRect();
+            simulationWidth = rect.width;
+            simulationHeight = rect.height;
+            centerX = simulationWidth / 2;
+            centerY = simulationHeight / 2;
+
+             // Update Earth position if needed
+            const earth = svgArea.querySelector('circle[fill="#3d5afe"]');
+            if (earth) {
+                earth.setAttribute('cx', centerX);
+                earth.setAttribute('cy', centerY);
+            }
+
+             // Re-position existing stations relative to new center if needed (optional)
+             // Simple approach: keep their absolute coordinates for now.
+             // More complex: recalculate based on relative positions.
+        }
+
+        function createSatellite() {
+            satelliteIdCounter++;
+            const id = `sat-${satelliteIdCounter}`;
+            const orbitRadius = Math.random() * (Math.min(centerX, centerY) * 0.8) + 50; // Random radius
+            const initialAngle = Math.random() * 2 * Math.PI;
+            const speed = (Math.random() * 0.02 + 0.005) * (Math.random() < 0.5 ? 1 : -1) ; // Random speed and direction
+
+            const satellite = {
+                id: id,
+                x: centerX + orbitRadius * Math.cos(initialAngle),
+                y: centerY + orbitRadius * Math.sin(initialAngle),
+                orbitRadius: orbitRadius,
+                angle: initialAngle,
+                speed: speed, // radians per interval
+                connectedToStationId: null, // ID of the station it's connected to
+                element: document.createElementNS(svgNS, 'circle')
+            };
+
+            satellite.element.setAttribute('id', id);
+            satellite.element.setAttribute('r', SATELLITE_SIZE);
+            satellite.element.setAttribute('class', 'satellite');
+            satellite.element.setAttribute('cx', satellite.x);
+            satellite.element.setAttribute('cy', satellite.y);
+            svgArea.appendChild(satellite.element);
+            satellites.push(satellite);
+            console.log(`Added ${id} at (${satellite.x.toFixed(1)}, ${satellite.y.toFixed(1)})`);
+        }
+
+        function createGroundStation() {
+            stationIdCounter++;
+            const id = `gs-${stationIdCounter}`;
+            // Place randomly, but not too close to the edge or center
+            const margin = STATION_SIZE + 20;
+            const x = Math.random() * (simulationWidth - 2 * margin) + margin;
+            const y = Math.random() * (simulationHeight - 2 * margin) + margin;
+            const capacity = parseInt(gsCapacityInput.value) || 1;
+            const range = parseInt(gsRangeInput.value) || 100;
+
+            const station = {
+                id: id,
+                x: x,
+                y: y,
+                capacity: capacity, // Max simultaneous connections
+                range: range,
+                currentLoad: 0, // Number of active connections
+                connectedSatellites: [], // List of connected satellite IDs
+                rangeElement: document.createElementNS(svgNS, 'circle'),
+                stationElement: document.createElementNS(svgNS, 'rect') // Use a rectangle for station
+            };
+
+            // Draw Range Circle
+            station.rangeElement.setAttribute('id', `${id}-range`);
+            station.rangeElement.setAttribute('cx', x);
+            station.rangeElement.setAttribute('cy', y);
+            station.rangeElement.setAttribute('r', range);
+            station.rangeElement.setAttribute('class', 'ground-station-range');
+            svgArea.insertBefore(station.rangeElement, svgArea.firstChild); // Draw range behind stations/sats
+
+            // Draw Station Square
+            station.stationElement.setAttribute('id', id);
+            // Draw rect from top-left corner, so adjust x,y to center it visually
+            station.stationElement.setAttribute('x', x - STATION_SIZE / 2);
+            station.stationElement.setAttribute('y', y - STATION_SIZE / 2);
+            station.stationElement.setAttribute('width', STATION_SIZE);
+            station.stationElement.setAttribute('height', STATION_SIZE);
+            station.stationElement.setAttribute('class', 'ground-station');
+            svgArea.appendChild(station.stationElement); // Draw station on top
+
+            groundStations.push(station);
+            console.log(`Added ${id} at (${x.toFixed(1)}, ${y.toFixed(1)}) Cap: ${capacity}, Range: ${range}`);
+        }
+
+        function updateSatellites() {
+            satellites.forEach(sat => {
+                // Update position (simple circular orbit)
+                sat.angle += sat.speed;
+                sat.x = centerX + sat.orbitRadius * Math.cos(sat.angle);
+                sat.y = centerY + sat.orbitRadius * Math.sin(sat.angle);
+
+                // Update SVG element position
+                sat.element.setAttribute('cx', sat.x);
+                sat.element.setAttribute('cy', sat.y);
+            });
+        }
+
+        function distance(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+        }
+
+        function updateCommunication() {
+            // 0. Reset station loads before recalculating connections
+            groundStations.forEach(gs => {
+                gs.currentLoad = 0;
+                gs.connectedSatellites = [];
+            });
+             // Clear existing communication lines from SVG
+            commLinks.forEach(link => link.remove());
+            commLinks = []; // Clear the array
+
+            // 1. Check existing connections and attempt new ones
+            satellites.forEach(sat => {
+                let wasConnected = sat.connectedToStationId !== null;
+                let currentStation = null;
+                if (wasConnected) {
+                    currentStation = groundStations.find(gs => gs.id === sat.connectedToStationId);
+                }
+
+                // Disconnect if station doesn't exist, is out of range, or becomes full in this step
+                if (wasConnected && (!currentStation || distance(sat.x, sat.y, currentStation.x, currentStation.y) > currentStation.range)) {
+                   console.log(`${sat.id} disconnected from ${sat.connectedToStationId} (out of range or station removed)`);
+                   sat.connectedToStationId = null;
+                   wasConnected = false; // Ensure we try to find a new station
+                }
+
+                // 2. If not connected, try to find a suitable station
+                if (sat.connectedToStationId === null) {
+                    let foundStation = false;
+                    // Iterate through stations, find first available one in range
+                    for (const gs of groundStations) {
+                        const dist = distance(sat.x, sat.y, gs.x, gs.y);
+                        if (dist <= gs.range && gs.currentLoad < gs.capacity) {
+                            // Connect!
+                            sat.connectedToStationId = gs.id;
+                            gs.currentLoad++;
+                            gs.connectedSatellites.push(sat.id);
+                            console.log(`${sat.id} connected to ${gs.id}`);
+                            foundStation = true;
+                            break; // Connect to the first one found (simple strategy)
+                        }
+                    }
+                     if (!foundStation && wasConnected) {
+                         // This case means it *was* connected, but the station got overloaded *before* this satellite was processed again this tick.
+                         // The previous disconnect logic handles out-of-range.
+                         console.log(`${sat.id} could not reconnect to ${currentStation?.id} (possibly full), now searching.`);
+                     }
+                } else {
+                    // If already connected, ensure the station load is counted
+                     if (currentStation) {
+                        // We need to make sure this connection doesn't overload the station *now*
+                        if(currentStation.currentLoad < currentStation.capacity) {
+                           currentStation.currentLoad++;
+                           currentStation.connectedSatellites.push(sat.id);
+                           // console.log(`${sat.id} maintains connection to ${currentStation.id}`);
+                        } else {
+                             // Station became full this tick before we re-affirmed this connection
+                             console.log(`${sat.id} disconnected from ${currentStation.id} (became full this tick)`);
+                             sat.connectedToStationId = null;
+                        }
+                    } else {
+                         // Should not happen if disconnect logic is correct, but safety check
+                         sat.connectedToStationId = null;
+                    }
+                }
+            });
+
+             // 3. Draw communication lines for active connections
+            satellites.forEach(sat => {
+                if (sat.connectedToStationId) {
+                    const gs = groundStations.find(g => g.id === sat.connectedToStationId);
+                    if (gs) { // Check if station still exists
+                        const line = document.createElementNS(svgNS, 'line');
+                        line.setAttribute('x1', sat.x);
+                        line.setAttribute('y1', sat.y);
+                        line.setAttribute('x2', gs.x);
+                        line.setAttribute('y2', gs.y);
+                        line.setAttribute('class', 'comm-link');
+                        svgArea.appendChild(line); // Draw line on top
+                        commLinks.push(line); // Add to array for cleanup
+                    } else {
+                         // Satellite thinks it's connected, but station is gone. Correct this.
+                         sat.connectedToStationId = null;
+                    }
+                }
+            });
+
+            updateStatus();
+        }
+
+        function updateStatus() {
+            let connectedCount = satellites.filter(s => s.connectedToStationId !== null).length;
+            let stationLoads = groundStations.map(gs => `${gs.id}: ${gs.currentLoad}/${gs.capacity}`).join(', ');
+            statusDiv.textContent = `Satellites: ${satellites.length} (${connectedCount} connected). Stations: ${groundStations.length}. Loads: [${stationLoads || 'N/A'}]`;
+        }
+
+        function simulationLoop() {
+            updateSatellites();
+            updateCommunication(); // Includes drawing links and updating status
+        }
+
+        // --- Initialization ---
+        addSatelliteBtn.addEventListener('click', createSatellite);
+        addStationBtn.addEventListener('click', createGroundStation);
+        window.addEventListener('resize', resizeSimulation); // Adjust layout on resize
+
+        // Initial setup
+        resizeSimulation(); // Set initial dimensions
+        // Add some initial elements
+        createSatellite();
+        createSatellite();
+        createGroundStation(); // Add one with default settings
+
+        // Start the simulation loop
+        setInterval(simulationLoop, SIMULATION_INTERVAL);
+        console.log("Simulation initialized.");
+        updateStatus(); // Initial status message
+
+    </script>
+
+</body>
+</html>
