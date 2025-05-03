@@ -1,0 +1,55 @@
+@startuml
+'--- Chen-style ERD with corrected relationship labels ---
+hide circle
+skinparam linetype ortho
+
+entity "Earth" as Earth {
+  *earthID : UUID
+  --
+  radius : Float
+}
+
+entity "Orbit" as Orb {
+  *orbitID : UUID
+  --
+  orbitDistance : Float
+  speed : Float
+}
+
+entity "Position" as Pos {
+  *positionID : UUID
+  --
+  latitude : Float
+  longitude : Float
+  altitude : Float
+}
+
+entity "Satellite" as Sat {
+  *satelliteID : UUID
+  --
+  type : {Green, Blue}
+  dataStored : Float
+  status : {Working, Jammed}
+}
+
+entity "GroundStation" as GS {
+  *stationID : UUID
+  --
+  capacity : Integer
+  dataCollected : Float
+  state : {Active, Damaged}
+}
+
+entity "Communication" as Comm {
+  *startTime : DateTime
+  *endTime   : DateTime
+  dataTransferred : Float
+}
+
+Earth ||--o{ Orb : "defines orbit"
+Orb   ||--o{ Sat : "moves by"
+Earth ||--o{ Pos : "defines position"
+Pos   ||--o{ GS  : "is located at"
+Sat   }o--o{ Comm : "participates in"
+GS    }o--o{ Comm : "participates in"
+@enduml
