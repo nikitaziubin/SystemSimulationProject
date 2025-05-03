@@ -1,0 +1,109 @@
+Simulation Report
+=====================
+Simulation End Time: Fri May  2 21:38:16 2025
+Total Satellites Simulated: 27
+Total Stations Simulated: 12
+Total Data Transferred to Stations: 256.91 GB
+Estimated Data Lost due to Station Repair: 618.40 GB
+
+Destroyed Satellites (19):
+ 1. COM-65 Destroyed at Fri May  2 21:36:10 2025 | Last Pos: (287.4, 654.6)
+ 2. MIL-78 Destroyed at Fri May  2 21:36:14 2025 | Last Pos: (886.2, 213.1)
+ 3. MIL-79 Destroyed at Fri May  2 21:36:25 2025 | Last Pos: (935.9, 288.9)
+ 4. COM-58 Destroyed at Fri May  2 21:36:31 2025 | Last Pos: (815.0, 754.3)
+ 5. MIL-74 Destroyed at Fri May  2 21:36:32 2025 | Last Pos: (587.7, 76.6)
+ 6. COM-72 Destroyed at Fri May  2 21:36:48 2025 | Last Pos: (428.3, 120.6)
+ 7. COM-67 Destroyed at Fri May  2 21:36:49 2025 | Last Pos: (228.4, 476.9)
+ 8. MIL-60 Destroyed at Fri May  2 21:36:49 2025 | Last Pos: (648.1, 818.4)
+ 9. COM-54 Destroyed at Fri May  2 21:36:52 2025 | Last Pos: (971.1, 467.8)
+ 10. MIL-76 Destroyed at Fri May  2 21:37:00 2025 | Last Pos: (766.3, 116.6)
+ 11. MIL-59 Destroyed at Fri May  2 21:37:00 2025 | Last Pos: (728.5, 800.8)
+ 12. MIL-77 Destroyed at Fri May  2 21:37:02 2025 | Last Pos: (840.2, 163.8)
+ 13. COM-64 Destroyed at Fri May  2 21:37:05 2025 | Last Pos: (328.1, 704.7)
+ 14. COM-80 Destroyed at Fri May  2 21:37:08 2025 | Last Pos: (968.3, 387.4)
+ 15. COM-62 Destroyed at Fri May  2 21:37:14 2025 | Last Pos: (467.6, 799.4)
+ 16. MIL-69 Destroyed at Fri May  2 21:37:39 2025 | Last Pos: (265.1, 289.2)
+ 17. COM-61 Destroyed at Fri May  2 21:37:43 2025 | Last Pos: (540.3, 817.7)
+ 18. COM-70 Destroyed at Fri May  2 21:37:58 2025 | Last Pos: (315.2, 209.8)
+ 19. MIL-63 Destroyed at Fri May  2 21:38:07 2025 | Last Pos: (374.5, 745.2)
+
+Damaged Stations Timeline:
+ Station 0:
+  - Damaged: Fri May  2 21:37:14 2025, Repaired: Fri May  2 21:37:19 2025, Lost: 33.45 GB
+ Station 1:
+  - Damaged: Fri May  2 21:36:05 2025, Repaired: Fri May  2 21:36:10 2025, Lost: 2.95 GB
+  - Damaged: Fri May  2 21:37:24 2025, Repaired: Fri May  2 21:37:29 2025, Lost: 45.11 GB
+  - Damaged: Fri May  2 21:38:09 2025, Repaired: Fri May  2 21:38:15 2025, Lost: 31.13 GB
+ Station 2:
+  - Damaged: Fri May  2 21:37:05 2025, Repaired: Fri May  2 21:37:10 2025, Lost: 16.92 GB
+  - Damaged: Fri May  2 21:37:14 2025, Repaired: Fri May  2 21:37:19 2025, Lost: 8.46 GB
+  - Damaged: Fri May  2 21:37:34 2025, Repaired: Fri May  2 21:37:39 2025, Lost: 4.23 GB
+  - Damaged: Fri May  2 21:37:39 2025, Repaired: Fri May  2 21:37:44 2025, Lost: 2.11 GB
+  - Damaged: Fri May  2 21:37:49 2025, Repaired: Fri May  2 21:37:54 2025, Lost: 1.06 GB
+  - Damaged: Fri May  2 21:38:14 2025, Not repaired by sim end.
+ Station 3:
+  - Damaged: Fri May  2 21:36:45 2025, Repaired: Fri May  2 21:36:50 2025, Lost: 43.71 GB
+  - Damaged: Fri May  2 21:37:03 2025, Repaired: Fri May  2 21:37:08 2025, Lost: 21.86 GB
+  - Damaged: Fri May  2 21:37:52 2025, Repaired: Fri May  2 21:37:57 2025, Lost: 27.62 GB
+ Station 4:
+  - Damaged: Fri May  2 21:37:06 2025, Repaired: Fri May  2 21:37:11 2025, Lost: 20.15 GB
+  - Damaged: Fri May  2 21:37:19 2025, Repaired: Fri May  2 21:37:24 2025, Lost: 10.08 GB
+  - Damaged: Fri May  2 21:37:45 2025, Repaired: Fri May  2 21:37:50 2025, Lost: 5.04 GB
+ Station 5:
+  - Damaged: Fri May  2 21:36:46 2025, Repaired: Fri May  2 21:36:51 2025, Lost: 20.10 GB
+  - Damaged: Fri May  2 21:36:55 2025, Repaired: Fri May  2 21:37:00 2025, Lost: 11.36 GB
+ Station 6:
+  - Damaged: Fri May  2 21:37:18 2025, Repaired: Fri May  2 21:37:23 2025, Lost: 45.12 GB
+  - Damaged: Fri May  2 21:37:25 2025, Repaired: Fri May  2 21:37:30 2025, Lost: 22.56 GB
+  - Damaged: Fri May  2 21:37:43 2025, Repaired: Fri May  2 21:37:48 2025, Lost: 11.28 GB
+  - Damaged: Fri May  2 21:37:54 2025, Repaired: Fri May  2 21:37:59 2025, Lost: 5.64 GB
+  - Damaged: Fri May  2 21:38:01 2025, Repaired: Fri May  2 21:38:06 2025, Lost: 2.82 GB
+  - Damaged: Fri May  2 21:38:11 2025, Not repaired by sim end.
+ Station 7:
+  - Damaged: Fri May  2 21:36:15 2025, Repaired: Fri May  2 21:36:20 2025, Lost: 3.82 GB
+  - Damaged: Fri May  2 21:36:57 2025, Repaired: Fri May  2 21:37:02 2025, Lost: 3.82 GB
+  - Damaged: Fri May  2 21:37:36 2025, Repaired: Fri May  2 21:37:41 2025, Lost: 1.91 GB
+  - Damaged: Fri May  2 21:37:43 2025, Repaired: Fri May  2 21:37:48 2025, Lost: 0.96 GB
+ Station 8:
+  - Damaged: Fri May  2 21:36:54 2025, Repaired: Fri May  2 21:36:59 2025, Lost: 30.17 GB
+  - Damaged: Fri May  2 21:37:05 2025, Repaired: Fri May  2 21:37:10 2025, Lost: 16.43 GB
+  - Damaged: Fri May  2 21:37:52 2025, Repaired: Fri May  2 21:37:57 2025, Lost: 8.21 GB
+  - Damaged: Fri May  2 21:37:59 2025, Repaired: Fri May  2 21:38:04 2025, Lost: 4.11 GB
+ Station 9:
+  - Damaged: Fri May  2 21:37:22 2025, Repaired: Fri May  2 21:37:27 2025, Lost: 47.51 GB
+  - Damaged: Fri May  2 21:37:59 2025, Repaired: Fri May  2 21:38:04 2025, Lost: 23.75 GB
+  - Damaged: Fri May  2 21:38:15 2025, Not repaired by sim end.
+ Station 10:
+  - Damaged: Fri May  2 21:36:42 2025, Repaired: Fri May  2 21:36:47 2025, Lost: 31.60 GB
+  - Damaged: Fri May  2 21:37:14 2025, Repaired: Fri May  2 21:37:19 2025, Lost: 20.27 GB
+ Station 11:
+  - Damaged: Fri May  2 21:37:35 2025, Repaired: Fri May  2 21:37:40 2025, Lost: 22.07 GB
+  - Damaged: Fri May  2 21:38:00 2025, Repaired: Fri May  2 21:38:05 2025, Lost: 11.03 GB
+
+Connection Loss Events (26):
+ 1. Sat: COM-70, Station: 1, Outage Start: Fri May  2 21:36:05 2025, Duration: 5.02 s
+ 2. Sat: COM-65, Station: 11, Outage Start: Fri May  2 21:36:05 2025, Duration: 130.11 s
+ 3. Sat: MIL-78, Station: 2, Outage Start: Fri May  2 21:36:09 2025, Duration: 126.08 s
+ 4. Sat: MIL-79, Station: 4, Outage Start: Fri May  2 21:36:20 2025, Duration: 115.39 s
+ 5. Sat: COM-58, Station: 9, Outage Start: Fri May  2 21:36:26 2025, Duration: 109.22 s
+ 6. Sat: MIL-74, Station: 6, Outage Start: Fri May  2 21:36:27 2025, Duration: 108.88 s
+ 7. Sat: COM-71, Station: 10, Outage Start: Fri May  2 21:36:42 2025, Duration: 5.04 s
+ 8. Sat: COM-72, Station: 6, Outage Start: Fri May  2 21:36:43 2025, Duration: 92.49 s
+ 9. Sat: COM-67, Station: 3, Outage Start: Fri May  2 21:36:44 2025, Duration: 91.60 s
+ 10. Sat: MIL-60, Station: 9, Outage Start: Fri May  2 21:36:44 2025, Duration: 91.21 s
+ 11. Sat: COM-54, Station: 7, Outage Start: Fri May  2 21:36:47 2025, Duration: 88.19 s
+ 12. Sat: MIL-76, Station: 6, Outage Start: Fri May  2 21:36:55 2025, Duration: 80.90 s
+ 13. Sat: MIL-59, Station: 9, Outage Start: Fri May  2 21:36:55 2025, Duration: 80.29 s
+ 14. Sat: MIL-55, Station: 7, Outage Start: Fri May  2 21:36:57 2025, Duration: 78.43 s
+ 15. Sat: COM-56, Station: 7, Outage Start: Fri May  2 21:36:57 2025, Duration: 78.43 s
+ 16. Sat: MIL-77, Station: 2, Outage Start: Fri May  2 21:36:57 2025, Duration: 78.14 s
+ 17. Sat: COM-64, Station: 11, Outage Start: Fri May  2 21:37:00 2025, Duration: 75.14 s
+ 18. Sat: COM-80, Station: 4, Outage Start: Fri May  2 21:37:03 2025, Duration: 72.50 s
+ 19. Sat: COM-62, Station: 0, Outage Start: Fri May  2 21:37:09 2025, Duration: 66.12 s
+ 20. Sat: COM-71, Station: 10, Outage Start: Fri May  2 21:37:14 2025, Duration: 5.00 s
+ 21. Sat: COM-73, Station: 6, Outage Start: Fri May  2 21:37:18 2025, Duration: 57.50 s
+ 22. Sat: MIL-75, Station: 6, Outage Start: Fri May  2 21:37:18 2025, Duration: 57.50 s
+ 23. Sat: MIL-69, Station: 3, Outage Start: Fri May  2 21:37:34 2025, Duration: 41.60 s
+ 24. Sat: COM-61, Station: 0, Outage Start: Fri May  2 21:37:38 2025, Duration: 37.25 s
+ 25. Sat: COM-70, Station: 10, Outage Start: Fri May  2 21:37:53 2025, Duration: 22.46 s
+ 26. Sat: MIL-63, Station: 0, Outage Start: Fri May  2 21:38:02 2025, Duration: 13.81 s
