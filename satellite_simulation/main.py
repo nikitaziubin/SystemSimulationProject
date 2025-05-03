@@ -1,24 +1,23 @@
 import pygame
 import random
 import time
-from config import * # Imports new constants and Kuiper params
-from satellite import Satellite # Updated Satellite class
+from config import *
+from satellite import Satellite
 from station import Station
 from inputbox import InputBox
 from button import Button
-from startsimulation import show_simulation_popup, start_simulation # Updated popup
+from startsimulation import show_simulation_popup, start_simulation
 import math
-# Removed duplicate Satellite/Station imports
-import json
+from config import *
+
 
 active_losses = {}
 connection_loss_log = []
 REPORT_FILENAME = "simulation_report.txt"
 
-
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Project Kuiper Simulation") # Consistent caption
+pygame.display.set_caption("Project Amazon Kuiper Simulation")
 clock = pygame.time.Clock() # Clock for frame timing
 font = pygame.font.SysFont(None, 24)
 info_font = pygame.font.SysFont(None, 22)
@@ -229,6 +228,20 @@ def generate_report(satellites_list, stations_list, conn_loss_log): # Accept lis
     # Damage logs are part of station objects, cleared when stations are cleared
 
 
+def set_simulation_speed(factor):
+
+    global simulation_end_time, simulation_running
+    # If a sim is in progress, shrink the remaining real time:
+    if simulation_running and simulation_end_time:
+        now = time.time()
+        remaining = simulation_end_time - now
+        if remaining > 0:
+            simulation_end_time = now + remaining / factor
+
+    #config.SIMULATION_SPEED = factor
+    print(f"Simulation speed set to {factor}×")
+
+
 
 # --- Buttons ---
 # Removed Add Satellite buttons
@@ -241,6 +254,12 @@ button_start_simulation = Button(20, 170, 250, 40, "Configure & Start Sim", on_s
 # Simulation control buttons (position adjusted slightly)
 button_terminate_simulation = Button(WIDTH - 270, 70, 250, 40, "Terminate Simulation", terminate_simulation)
 button_stop_simulation = Button(WIDTH - 270, 120, 250, 40, "Stop Sim & Gen Report", stop_simulation) # Renamed
+
+button_speed_1x = Button(WIDTH - 270, 170, 250, 40, "1×", lambda: set_simulation_speed(1))
+button_speed_2x = Button(WIDTH - 270, 220, 250, 40, "2x", lambda: set_simulation_speed(2))
+button_speed_4x = Button(160, 220, 60, 30, "4×", lambda: set_simulation_speed(4))
+button_speed_8x = Button(230, 220, 60, 30, "8×", lambda: set_simulation_speed(8))
+
 
 # State variable for button enable/disable
 manual_controls_enabled = True
@@ -494,10 +513,13 @@ while running:
         button_add_random_station.draw(screen)
         button_start_simulation.draw(screen)
 
+
     # Draw Simulation Control buttons if simulation is running or has run
     if simulation_running or simulation_end_time is not None:
         button_terminate_simulation.draw(screen)
         button_stop_simulation.draw(screen)
+        button_speed_1x.draw(screen)
+        button_speed_2x.draw(screen)
 
     # Show simulation timer if active
     if simulation_running and simulation_end_time:

@@ -75,6 +75,8 @@ SATELLITE_DAMAGE_PROBABILITY = 0.0003
 BLINK_DURATION_MS = 5000
 BLINK_INTERVAL_MS = 250
 
+SIMULATION_SPEED = 1
+
 # --- Stars (Unchanged) ---
 STAR_COUNT = 350
 stars = [(random.randint(0, WIDTH), random.randint(0, HEIGHT), random.uniform(0.5, 1.5)) for _ in range(STAR_COUNT)]
