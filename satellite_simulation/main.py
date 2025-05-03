@@ -1,40 +1,42 @@
 import pygame
 import random
 import time
-from config import *
+# Import config directly to modify SIMULATION_SPEED
+import config
 from satellite import Satellite
 from station import Station
 from inputbox import InputBox
 from button import Button
+# --- Import the new Slider class ---
+from slider import Slider
+# --- End Import ---
 from startsimulation import show_simulation_popup, start_simulation
 import math
-from config import *
 
-
+# --- Globals (mostly unchanged) ---
 active_losses = {}
 connection_loss_log = []
-REPORT_FILENAME = "simulation_report.txt"
+REPORT_FILENAME = f"simulation_report_{time.strftime('%Y%m%d_%H%M%S')}.txt" # Unique name
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Project Amazon Kuiper Simulation")
-clock = pygame.time.Clock() # Clock for frame timing
+screen = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
+pygame.display.set_caption("Project Kuiper Simulation")
+clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 24)
 info_font = pygame.font.SysFont(None, 22)
 capacity_font = pygame.font.SysFont(None, 18)
 selected_station = None
-# delta_time = clock.tick(60) # Incorrect: delta_time should be calculated inside the loop
 
 satellites = []
 stations = []
 
-simulation_end_time = None
 simulation_running = False
+total_simulation_duration_ms = 0.0
+elapsed_simulation_time_ms = 0.0
 
-satellite_counter = 1 # Keep counter for unique names
+satellite_counter = 1
 
-# --- Removed create_satellite function - now handled by start_simulation ---
-
+# --- delete_selected_station (Unchanged) ---
 def delete_selected_station():
     global selected_station
     if selected_station in stations:
@@ -45,17 +47,16 @@ def delete_selected_station():
     else:
         print("No station selected to delete.")
 
-# --- Add Random Station (Unchanged, uses EARTH_RADIUS_PIXELS) ---
+# --- add_random_station (Unchanged) ---
 def add_random_station():
     max_attempts = 100
     for _ in range(max_attempts):
         angle = random.uniform(0, 2 * math.pi)
-        # Use EARTH_RADIUS_PIXELS for placement
-        station_x = EARTH_POSITION[0] + EARTH_RADIUS_PIXELS * math.cos(angle)
-        station_y = EARTH_POSITION[1] + EARTH_RADIUS_PIXELS * math.sin(angle)
+        station_x = config.EARTH_POSITION[0] + config.EARTH_RADIUS_PIXELS * math.cos(angle)
+        station_y = config.EARTH_POSITION[1] + config.EARTH_RADIUS_PIXELS * math.sin(angle)
         can_place = True
         for existing_station in stations:
-            if math.dist((station_x, station_y), (existing_station.x, existing_station.y)) < STATION_MIN_DISTANCE:
+            if math.dist((station_x, station_y), (existing_station.x, existing_station.y)) < config.STATION_MIN_DISTANCE:
                 can_place = False
                 break
         if can_place:
@@ -64,13 +65,11 @@ def add_random_station():
             return
     print("Could not find a free spot for a random station after multiple attempts.")
 
-# --- Find Closest Station - Prioritize based on satellite needs? (Optional Enhancement) ---
-# Current logic is simple proximity + availability. Keep as is for now.
+# --- find_closest_available_station (Unchanged) ---
 def find_closest_available_station(satellite):
     best_station = None
     min_dist_sq = float('inf')
     for station in stations:
-        # Check if station is operational and satellite is within its comms arc/range
         if station.status == 'operational' and station.can_connect() and station.is_satellite_in_range(satellite):
             dist_sq = (station.x - satellite.x)**2 + (station.y - satellite.y)**2
             if dist_sq < min_dist_sq:
@@ -78,118 +77,134 @@ def find_closest_available_station(satellite):
                 best_station = station
     return best_station
 
-# --- Simulation Start/Stop/Terminate ---
-def on_start_simulation_click():
-    global simulation_end_time, simulation_running, satellites, stations, satellite_counter, manual_controls_enabled
-    global active_losses, connection_loss_log # Ensure globals are accessed
+# --- set_simulation_speed function (Simplified) ---
+def set_simulation_speed(factor):
+    # Ensure factor is float and within reasonable bounds if needed
+    new_speed = max(1.0, float(factor)) # Example: ensure speed is at least 1x
+    if new_speed != config.SIMULATION_SPEED:
+        config.SIMULATION_SPEED = new_speed
+        # Optional: Print only when it changes
+        # print(f"Simulation speed set to {config.SIMULATION_SPEED:.1f}x")
+# --- End set_simulation_speed function ---
 
-    # Clear previous simulation elements if any
+
+# --- on_start_simulation_click (Reset slider value) ---
+def on_start_simulation_click():
+    global simulation_running, satellites, stations, satellite_counter, manual_controls_enabled
+    global active_losses, connection_loss_log
+    global total_simulation_duration_ms, elapsed_simulation_time_ms
+
     satellites.clear()
     stations.clear()
     active_losses.clear()
     connection_loss_log.clear()
     satellite_counter = 1
-    Station._id_counter = 0 # Reset station ID counter
+    Station._id_counter = 0
+    elapsed_simulation_time_ms = 0.0
+    config.SIMULATION_SPEED = 1.0 # Reset speed factor
+    speed_slider.set_value(1.0) # Reset slider visual and internal value
 
-    params = show_simulation_popup() # Get params from the modified popup
+    params = show_simulation_popup()
     if params:
-        # start_simulation now also populates satellites and stations
-        simulation_end_time = start_simulation(satellites, stations, disable_manual_controls, params)
+        duration_minutes = int(params["duration"])
+        duration_seconds = int(params["duration_seconds"])
+        total_simulation_duration_ms = (duration_minutes * 60 + duration_seconds) * 1000.0
+
+        start_simulation(satellites, stations, disable_manual_controls, params)
+
         simulation_running = True
-        manual_controls_enabled = False # Disable controls immediately
+        manual_controls_enabled = False
         print(f"Simulation started with {len(satellites)} satellites and {len(stations)} stations.")
+        print(f"Total simulation duration: {total_simulation_duration_ms / 1000.0:.1f} seconds.")
     else:
-        # Re-enable controls if popup was cancelled
         manual_controls_enabled = True
+        total_simulation_duration_ms = 0.0
 
 
+# --- terminate_simulation (Reset slider value) ---
 def terminate_simulation():
     global simulation_running, manual_controls_enabled, selected_station, satellites, stations
-    global active_losses, connection_loss_log
+    global active_losses, connection_loss_log, elapsed_simulation_time_ms
     print("Simulation was terminated by user.")
     simulation_running = False
 
-    # Clear simulation state
     satellites.clear()
     stations.clear()
     selected_station = None
     active_losses.clear()
     connection_loss_log.clear()
-    manual_controls_enabled = True # Re-enable controls
+    elapsed_simulation_time_ms = 0.0
+    manual_controls_enabled = True
+    config.SIMULATION_SPEED = 1.0 # Reset speed factor
+    speed_slider.set_value(1.0) # Reset slider
 
 
+# --- stop_simulation (Reset slider value) ---
 def stop_simulation():
     global simulation_running, manual_controls_enabled, selected_station, satellites, stations
-    global active_losses, connection_loss_log
+    global active_losses, connection_loss_log, elapsed_simulation_time_ms
     print("Simulation stopped.")
     simulation_running = False
 
-    # Log any active losses before clearing
     now = time.time()
     for (sat, station), info in active_losses.items():
         duration = now - info['start_time']
         connection_loss_log.append({
             'sat': sat.name,
-            'station': station.id if station else 'None', # Handle potential None case?
+            'station': station.id if station else 'None',
             'start_time': info['start_time'],
             'duration': duration
         })
     active_losses.clear()
 
-    # Generate report before clearing elements
-    if satellites or stations: # Only generate if there was a sim
-         generate_report(satellites, stations, connection_loss_log) # Pass log
+    if satellites or stations:
+         generate_report(satellites, stations, connection_loss_log, elapsed_simulation_time_ms)
 
-    # Clear simulation state
     satellites.clear()
     stations.clear()
     selected_station = None
-    connection_loss_log.clear() # Clear log after reporting
-    manual_controls_enabled = True # Re-enable controls
+    connection_loss_log.clear()
+    elapsed_simulation_time_ms = 0.0
+    manual_controls_enabled = True
+    config.SIMULATION_SPEED = 1.0 # Reset speed factor
+    speed_slider.set_value(1.0) # Reset slider
 
-
-# --- Report Generation (pass connection_loss_log) ---
-def generate_report(satellites_list, stations_list, conn_loss_log): # Accept lists and log
+# --- generate_report (Unchanged) ---
+def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed_sim_time_ms):
+    # ... (report generation code is identical to previous version) ...
     total_data = sum(station.received_data for station in stations_list)
-    # Calculate lost data more robustly from damage log
     lost_data_damage = 0
     for station in stations_list:
         for entry in station.damage_log:
-            # entry format: [damage_time, repair_time, data_lost_at_repair]
-            if len(entry) > 2 and entry[1] is not None: # Check if repaired and loss recorded
+            if len(entry) > 2 and entry[1] is not None:
                 lost_data_damage += entry[2]
-
-    # Destroyed satellites (use the class log directly)
     destroyed_sats_log = Satellite.destroyed_satellites_log
-    # Station damage log (already iterated above for data loss)
-
-    report_filename = REPORT_FILENAME
+    report_filename = "simulation_report.txt"
     with open(report_filename, "w", encoding="utf-8") as file:
         report_text = "Simulation Report\n"
         report_text += "=====================\n"
-        report_text += f"Simulation End Time: {time.ctime()}\n"
+        report_text += f"Report Generated At: {time.ctime()}\n"
+        sim_time_sec = final_elapsed_sim_time_ms / 1000.0
+        sim_min = int(sim_time_sec // 60)
+        sim_sec = sim_time_sec % 60
+        report_text += f"Total Simulation Time Elapsed: {sim_min}m {sim_sec:.1f}s\n"
+        report_text += f"Final Simulation Speed: {config.SIMULATION_SPEED:.1f}x\n" # Add speed info
         report_text += f"Total Satellites Simulated: {len(satellites_list) + len(destroyed_sats_log)}\n"
         report_text += f"Total Stations Simulated: {len(stations_list)}\n"
         report_text += f"Total Data Transferred to Stations: {total_data:.2f} GB\n"
         report_text += f"Estimated Data Lost due to Station Repair: {lost_data_damage:.2f} GB\n"
         report_text += "\n"
-
         report_text += f"Destroyed Satellites ({len(destroyed_sats_log)}):\n"
-        if not destroyed_sats_log:
-            report_text += "  None\n"
+        if not destroyed_sats_log: report_text += "  None\n"
         else:
             for i, sat_info in enumerate(destroyed_sats_log, start=1):
-                 # Log now stores satellite object itself
                  name = getattr(sat_info, "name", "Unknown")
                  destroy_time = getattr(sat_info, "destroyed_time", None)
                  pos_x = getattr(sat_info, "x", "N/A")
                  pos_y = getattr(sat_info, "y", "N/A")
                  time_str = time.ctime(destroy_time) if destroy_time else "N/A"
                  report_text += f" {i}. {name} Destroyed at {time_str} | Last Pos: ({pos_x:.1f}, {pos_y:.1f})\n"
-        report_text += "\n"
-
-
-        report_text += "Damaged Stations Timeline:\n"
+        report_text += "\nDamaged Stations Timeline:\n"
         any_station_damage = False
         for station in stations_list:
             if station.damage_log:
@@ -197,87 +212,85 @@ def generate_report(satellites_list, stations_list, conn_loss_log): # Accept lis
                 report_text += f" Station {station.id}:\n"
                 for entry in station.damage_log:
                     damage_time_str = time.ctime(entry[0])
-                    if entry[1]: # Repaired
+                    if entry[1]:
                         repair_time_str = time.ctime(entry[1])
-                        data_loss = entry[2] if len(entry) > 2 else 0.0 # Get recorded loss
+                        data_loss = entry[2] if len(entry) > 2 else 0.0
                         report_text += f"  - Damaged: {damage_time_str}, Repaired: {repair_time_str}, Lost: {data_loss:.2f} GB\n"
-                    else: # Still damaged at end of sim
+                    else:
                         report_text += f"  - Damaged: {damage_time_str}, Not repaired by sim end.\n"
-        if not any_station_damage:
-             report_text += "  None\n"
-        report_text += "\n"
-
-
-        report_text += f"Connection Loss Events ({len(conn_loss_log)}):\n"
-        if not conn_loss_log:
-             report_text += "  None\n"
+        if not any_station_damage: report_text += "  None\n"
+        report_text += "\nConnection Loss Events ({len(conn_loss_log)}):\n"
+        if not conn_loss_log: report_text += "  None\n"
         else:
-             # Sort log by start time for clarity
              conn_loss_log.sort(key=lambda x: x['start_time'])
              for i, ev in enumerate(conn_loss_log, start=1):
                  start_str = time.ctime(ev['start_time'])
                  report_text += (f" {i}. Sat: {ev['sat']}, Station: {ev['station']}, "
                                 f"Outage Start: {start_str}, Duration: {ev['duration']:.2f} s\n")
-
-        # Finally write all at once
         file.write(report_text)
-
     print(f"Report written to {report_filename}")
-    # Clear logs after reporting
     Satellite.destroyed_satellites_log.clear()
-    # Damage logs are part of station objects, cleared when stations are cleared
 
-
-def set_simulation_speed(factor):
-
-    global simulation_end_time, simulation_running
-    # If a sim is in progress, shrink the remaining real time:
-    if simulation_running and simulation_end_time:
-        now = time.time()
-        remaining = simulation_end_time - now
-        if remaining > 0:
-            simulation_end_time = now + remaining / factor
-
-    #config.SIMULATION_SPEED = factor
-    print(f"Simulation speed set to {factor}×")
-
-
-
-# --- Buttons ---
-# Removed Add Satellite buttons
-# button1 = Button(20, 20, 250, 40, "Add commercial satellite (blue)", lambda: create_satellite('A'))
-# button2 = Button(20, 70, 250, 40, "Add military satellite (green)", lambda: create_satellite('B'))
-button_delete_station = Button(20, 70, 250, 40, "Delete Selected Station", delete_selected_station) # Adjusted Y pos
-button_add_random_station = Button(20, 120, 250, 40, "Add Random Station", add_random_station) # New button
-button_start_simulation = Button(20, 170, 250, 40, "Configure & Start Sim", on_start_simulation_click) # Renamed, Adjusted Y pos
-
-# Simulation control buttons (position adjusted slightly)
-button_terminate_simulation = Button(WIDTH - 270, 70, 250, 40, "Terminate Simulation", terminate_simulation)
-button_stop_simulation = Button(WIDTH - 270, 120, 250, 40, "Stop Sim & Gen Report", stop_simulation) # Renamed
-
-button_speed_1x = Button(WIDTH - 270, 170, 250, 40, "1×", lambda: set_simulation_speed(1))
-button_speed_2x = Button(WIDTH - 270, 220, 250, 40, "2x", lambda: set_simulation_speed(2))
-button_speed_4x = Button(160, 220, 60, 30, "4×", lambda: set_simulation_speed(4))
-button_speed_8x = Button(230, 220, 60, 30, "8×", lambda: set_simulation_speed(8))
-
-
-# State variable for button enable/disable
-manual_controls_enabled = True
-
+# --- disable_manual_controls (Unchanged) ---
 def disable_manual_controls():
     global manual_controls_enabled
     manual_controls_enabled = False
     print("Manual controls disabled for simulation.")
 
+# --- Buttons ---
+# Manual Controls (Unchanged)
+button_delete_station = Button(20, 70, 250, 40, "Delete Selected Station", delete_selected_station)
+button_add_random_station = Button(20, 120, 250, 40, "Add Random Station", add_random_station)
+button_start_simulation = Button(20, 170, 250, 40, "Configure & Start Sim", on_start_simulation_click)
+
+# Simulation Controls (Unchanged)
+sim_ctrl_x = config.WIDTH - 270
+button_terminate_simulation = Button(sim_ctrl_x, 70, 250, 40, "Terminate Simulation", terminate_simulation)
+button_stop_simulation = Button(sim_ctrl_x, 120, 250, 40, "Stop Sim & Gen Report", stop_simulation)
+
+# --- Remove Speed Buttons ---
+# button_speed_1x = ...
+# button_speed_2x = ...
+# button_speed_4x = ...
+# button_speed_8x = ...
+# speed_buttons = [...]
+# --- End Remove Speed Buttons ---
+
+# --- ADD Speed Slider ---
+speed_slider_y = 180 # Position below stop button
+speed_slider_w = 250 # Approx width of old buttons
+speed_slider_h = 20  # Height of slider track area
+speed_slider = Slider(sim_ctrl_x, speed_slider_y, speed_slider_w, speed_slider_h,
+                      min_val=1.0, max_val=64.0, initial_val=1.0, label="Speed: ")
+# --- End Speed Slider ---
+
+# State variable for button enable/disable
+manual_controls_enabled = True
+
 # --- Main Loop ---
 running = True
 while running:
-    # Calculate delta_time properly inside the loop (in milliseconds)
-    delta_time_ms = clock.tick(60) # Limit FPS and get time since last frame
+    delta_time_ms = clock.tick(60)
+    current_ticks = pygame.time.get_ticks() # For real-time events like station repair
 
-    current_ticks = pygame.time.get_ticks() # For blinking, damage timers etc.
+    # --- Update Speed from Slider ---
+    # Do this *before* calculating effective delta time if the slider might change it
+    if simulation_running:
+        new_speed = speed_slider.get_value()
+        # Optional: Set speed only if it changed significantly to avoid float comparison issues
+        if abs(new_speed - config.SIMULATION_SPEED) > 0.01:
+             set_simulation_speed(new_speed)
+             # print(f"Slider value changed, new speed: {config.SIMULATION_SPEED:.1f}x") # Debug
+    # --- End Update Speed ---
 
-    # Store previous connection state for loss detection
+    # Calculate effective simulation time elapsed this frame
+    effective_delta_time_ms = delta_time_ms * config.SIMULATION_SPEED
+
+    # Update total elapsed simulation time
+    if simulation_running:
+        elapsed_simulation_time_ms += effective_delta_time_ms
+
+    # Store previous connection state (Unchanged)
     prev_conn = {sat: sat.connected_to for sat in satellites if sat.status != 'destroyed'}
 
     # --- Event Handling ---
@@ -285,27 +298,37 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # Handle clicks only if not simulating OR if clicking sim control buttons
-        is_sim_control_click = False
+        # --- Handle Slider Event FIRST if sim running ---
         if simulation_running:
-             if button_terminate_simulation.is_hovered() or button_stop_simulation.is_hovered():
-                 is_sim_control_click = True
+            speed_slider.handle_event(event)
+        # --- End Slider Event Handling ---
 
+        # Mouse Button Down Logic (Removed speed button checks)
         if event.type == pygame.MOUSEBUTTONDOWN:
+            # Prevent interaction below if slider handled it
+            # Note: Slider handle_event doesn't return True/False, so we rely on
+            #       checking if the mouse was over the slider *before* handling other clicks.
+            #       This isn't perfect but often works. A better Slider class might return consumed status.
             mouse_x, mouse_y = event.pos
+            slider_hover = speed_slider.rect.collidepoint(mouse_x, mouse_y) if simulation_running else False
 
-            # Handle Simulation Control Buttons FIRST if simulation is running
-            if simulation_running:
+            clicked_on_manual_button = False
+            clicked_on_sim_control = False
+
+
+            # Handle Simulation Control Buttons (Stop/Terminate)
+            if simulation_running and not slider_hover: # Don't handle if click was on slider
                 if button_terminate_simulation.is_hovered():
                     button_terminate_simulation.handle_click()
-                    continue # Skip other click handling
-                if button_stop_simulation.is_hovered():
+                    clicked_on_sim_control = True
+                elif button_stop_simulation.is_hovered():
                     button_stop_simulation.handle_click()
-                    continue # Skip other click handling
+                    clicked_on_sim_control = True
 
-            # Handle Manual Control Buttons ONLY if enabled
-            if manual_controls_enabled:
-                clicked_on_manual_button = False
+                if clicked_on_sim_control: continue
+
+            # Handle Manual Control Buttons
+            if manual_controls_enabled and not slider_hover:
                 if button_delete_station.is_hovered():
                      button_delete_station.handle_click()
                      clicked_on_manual_button = True
@@ -313,233 +336,156 @@ while running:
                      button_add_random_station.handle_click()
                      clicked_on_manual_button = True
                 elif button_start_simulation.is_hovered():
-                     button_start_simulation.handle_click() # This will disable controls if successful
+                     button_start_simulation.handle_click()
                      clicked_on_manual_button = True
-                # Add other manual buttons here if needed
 
-                if clicked_on_manual_button:
-                    continue # Skip station interaction if a button was clicked
+                if clicked_on_manual_button: continue
 
-            # --- Station Interaction (Selection, Radius Change, Manual Placement) ---
-            # Allow station interaction even during simulation for viewing info? Yes.
-            # Allow radius change / placement only if manual controls enabled? Yes.
+            # Station Interaction (only if not clicking slider or buttons)
+            if not slider_hover and not clicked_on_manual_button and not clicked_on_sim_control:
+                station_interacted_with = False
+                new_selection = None
+                min_dist_sq = config.STATION_SELECTION_RADIUS**2
 
-            station_interacted_with = False
-            new_selection = None
-            min_dist_sq = STATION_SELECTION_RADIUS**2
+                # Left Click
+                if event.button == 1:
+                    for station in stations:
+                        dist_sq = (mouse_x - station.x)**2 + (mouse_y - station.y)**2
+                        if dist_sq < min_dist_sq:
+                            min_dist_sq = dist_sq
+                            new_selection = station
+                    if new_selection:
+                        station_interacted_with = True
+                        if new_selection == selected_station:
+                            if manual_controls_enabled: selected_station.change_radius(config.STATION_RADIUS_CLICK_CHANGE)
+                        else: selected_station = new_selection
+                    else: selected_station = None
 
-            # Station Selection (Always allowed)
-            if event.button == 1: # Left Click
-                for station in stations:
-                    dist_sq = (mouse_x - station.x)**2 + (mouse_y - station.y)**2
-                    if dist_sq < min_dist_sq:
-                        min_dist_sq = dist_sq
-                        new_selection = station
+                    # Manual Station Placement
+                    if manual_controls_enabled and not station_interacted_with:
+                        dist_to_earth_center = math.dist((mouse_x, mouse_y), config.EARTH_POSITION)
+                        if abs(dist_to_earth_center - config.EARTH_RADIUS_PIXELS) < 20:
+                             # ... (Placement logic unchanged) ...
+                             if dist_to_earth_center > 0:
+                                  factor = config.EARTH_RADIUS_PIXELS / dist_to_earth_center
+                                  station_x = config.EARTH_POSITION[0] + (mouse_x - config.EARTH_POSITION[0]) * factor
+                                  station_y = config.EARTH_POSITION[1] + (mouse_y - config.EARTH_POSITION[1]) * factor
+                             else:
+                                  station_x = config.EARTH_POSITION[0]; station_y = config.EARTH_POSITION[1] - config.EARTH_RADIUS_PIXELS
+                             can_place = True
+                             for existing_station in stations:
+                                  if math.dist((station_x, station_y), (existing_station.x, existing_station.y)) < config.STATION_MIN_DISTANCE:
+                                       can_place = False; print("Cannot place station: Too close to another station."); break
+                             if can_place: stations.append(Station(station_x, station_y)); print(f"Station added manually near ({station_x:.0f}, {station_y:.0f})"); station_interacted_with = True
 
-                if new_selection:
-                    station_interacted_with = True
-                    if new_selection == selected_station:
-                        # Increase radius only if manual controls enabled
-                        if manual_controls_enabled:
-                            selected_station.change_radius(STATION_RADIUS_CLICK_CHANGE)
-                    else:
-                        selected_station = new_selection # Select new station
-                elif not is_sim_control_click and not clicked_on_manual_button: # Clicked on empty space
-                    selected_station = None
-
-                # Manual Station Placement (Only if manual controls enabled)
-                if manual_controls_enabled and not station_interacted_with and not clicked_on_manual_button:
-                    # Check if click is near Earth's edge (using pixel radius)
-                    dist_to_earth_center = math.dist((mouse_x, mouse_y), EARTH_POSITION)
-                    if abs(dist_to_earth_center - EARTH_RADIUS_PIXELS) < 20: # Tolerance
-                         # Project click onto Earth's surface
-                         if dist_to_earth_center > 0:
-                              factor = EARTH_RADIUS_PIXELS / dist_to_earth_center
-                              station_x = EARTH_POSITION[0] + (mouse_x - EARTH_POSITION[0]) * factor
-                              station_y = EARTH_POSITION[1] + (mouse_y - EARTH_POSITION[1]) * factor
-                         else: # Click exactly at center? Place at top.
-                              station_x = EARTH_POSITION[0]
-                              station_y = EARTH_POSITION[1] - EARTH_RADIUS_PIXELS
-
-                         # Check proximity to other stations
-                         can_place = True
-                         for existing_station in stations:
-                              if math.dist((station_x, station_y), (existing_station.x, existing_station.y)) < STATION_MIN_DISTANCE:
-                                   can_place = False
-                                   print("Cannot place station: Too close to another station.")
-                                   break
-                         if can_place:
-                              stations.append(Station(station_x, station_y))
-                              print(f"Station added manually near ({station_x:.0f}, {station_y:.0f})")
-                              station_interacted_with = True # Count as interaction
-
-            elif event.button == 3: # Right Click (Decrease Radius)
-                 # Allow radius decrease only if manual controls enabled AND a station is selected
-                 if manual_controls_enabled and selected_station:
-                     dist_sq_to_selected = (mouse_x - selected_station.x)**2 + (mouse_y - selected_station.y)**2
-                     if dist_sq_to_selected < STATION_SELECTION_RADIUS**2:
-                         selected_station.change_radius(-STATION_RADIUS_CLICK_CHANGE)
-                         station_interacted_with = True
+                # Right Click
+                elif event.button == 3:
+                     if manual_controls_enabled and selected_station:
+                         dist_sq_to_selected = (mouse_x - selected_station.x)**2 + (mouse_y - selected_station.y)**2
+                         if dist_sq_to_selected < config.STATION_SELECTION_RADIUS**2:
+                             selected_station.change_radius(-config.STATION_RADIUS_CLICK_CHANGE); station_interacted_with = True
 
 
-    # --- Update Logic ---
-    if simulation_running: # Only update simulation elements if running
-        # Update Satellites (pass delta_time_ms)
-        # Iterate over a copy for safe removal if needed (though destruction is handled by filtering later)
+    # --- Update Logic (Unchanged) ---
+    if simulation_running:
         for sat in list(satellites):
-             sat.update(current_ticks, stations, delta_time_ms)
-
-        # Update Stations
+             sat.update(current_ticks, stations, effective_delta_time_ms) # Pass effective time
         for station in stations:
-             station.update(current_ticks) # Station update might trigger damage/repair
+             station.update(current_ticks) # Pass real pygame ticks
 
-        # Filter out destroyed satellites
         satellites = [sat for sat in satellites if sat.status != 'destroyed']
 
-        # --- Connection Logic ---
-        # 1. Disconnect satellites that moved out of range of their connected station
+        # Connection Logic (Unchanged)
         for station in stations:
-             for sat in list(station.connected_satellites): # Iterate copy
+             for sat in list(station.connected_satellites):
                  if not station.is_satellite_in_range(sat) or sat.status != 'operational':
-                     station.disconnect_satellite(sat) # This also sets sat.connected_to = None
-
-        # 2. Connect available operational satellites to available operational stations
-        # (Consider prioritizing specific satellites/stations later if needed)
+                     station.disconnect_satellite(sat)
         for sat in satellites:
-             # Try to connect only if operational and not already connected
              if sat.status == 'operational' and not sat.connected_to:
                   best_station = find_closest_available_station(sat)
-                  if best_station:
-                       # connect_satellite checks station status, capacity, and adds to list
-                       best_station.connect_satellite(sat) # This sets sat.connected_to
+                  if best_station: best_station.connect_satellite(sat)
 
-        # --- Detect Connection Losses ---
-        now = time.time()
+        # Detect Connection Losses (Unchanged)
+        now_real = time.time()
         current_conn = {sat: sat.connected_to for sat in satellites if sat.status != 'destroyed'}
-
-        # Check satellites that were previously connected
         for sat, old_station in prev_conn.items():
-             if sat not in current_conn or current_conn[sat] is None: # Lost connection
-                  if old_station is not None: # Was connected to a valid station
+             if sat not in current_conn or current_conn[sat] is None:
+                  if old_station is not None:
                        key = (sat, old_station)
-                       if key not in active_losses:
-                            active_losses[key] = {
-                                'start_time': now,
-                                'sat_pos': (sat.x, sat.y), # Record position at time of loss
-                                'st_pos': (old_station.x, old_station.y)
-                            }
-
-        # Check satellites that are newly connected (to stop logging loss)
+                       if key not in active_losses: active_losses[key] = {'start_time': now_real, 'sat_pos': (sat.x, sat.y), 'st_pos': (old_station.x, old_station.y)}
         for sat, new_station in current_conn.items():
-             if new_station is not None: # Is now connected
-                  # Check if this specific sat-station pair was being logged as a loss
+             if new_station is not None:
                   key = (sat, new_station)
                   if key in active_losses:
-                       info = active_losses.pop(key)
-                       duration = now - info['start_time']
-                       # Ensure station object is valid before accessing id
-                       station_id = new_station.id if new_station else 'Unknown'
-                       connection_loss_log.append({
-                            'sat': sat.name,
-                            'station': station_id,
-                            'start_time': info['start_time'],
-                            'duration': duration
-                       })
+                       info = active_losses.pop(key); duration = now_real - info['start_time']; station_id = new_station.id if new_station else 'Unknown'
+                       connection_loss_log.append({'sat': sat.name, 'station': station_id, 'start_time': info['start_time'], 'duration': duration})
 
 
     # --- Drawing ---
-    screen.fill(DARK_SPACE)
-    # Draw Stars
-    for x, y, r in stars: pygame.draw.circle(screen, STAR_COLOR, (int(x), int(y)), int(r))
+    screen.fill(config.DARK_SPACE)
+    # Draw Stars, Earth, Stations, Satellites (Unchanged)
+    for x, y, r in config.stars: pygame.draw.circle(screen, config.STAR_COLOR, (int(x), int(y)), int(r))
+    if config.earth_image: screen.blit(config.earth_image, config.earth_image.get_rect(center=config.EARTH_POSITION))
+    else: pygame.draw.circle(screen, (0, 80, 180), config.EARTH_POSITION, config.EARTH_RADIUS_PIXELS)
+    for station in stations: station.draw(screen, (station == selected_station), capacity_font)
+    for sat in satellites: sat.draw(screen)
 
-    # Draw Earth (Using pixel radius)
-    if earth_image:
-        earth_rect = earth_image.get_rect(center=EARTH_POSITION)
-        screen.blit(earth_image, earth_rect)
-    else:
-        pygame.draw.circle(screen, (0, 80, 180), EARTH_POSITION, EARTH_RADIUS_PIXELS) # Use pixel radius
-
-    # Draw Stations
-    for station in stations:
-        is_selected = (station == selected_station)
-        station.draw(screen, is_selected, capacity_font) # Pass font
-
-    # Draw Satellites
-    for sat in satellites:
-        sat.draw(screen)
-
-    # Draw Active Connection Loss Lines (Briefly)
+    # Draw Active Connection Loss Lines (Unchanged)
     if simulation_running:
-        now_vis = time.time()
-        keys_to_remove = []
+        now_vis_real = time.time()
         for key, info in active_losses.items():
-            # Draw for a short duration after loss starts
-            if now_vis - info['start_time'] < 1.5: # Show for 1.5 seconds
+            if now_vis_real - info['start_time'] < 1.5:
                 sat_obj, station_obj = key
-                # Check if objects still exist (might have been destroyed/deleted)
                 if sat_obj in satellites and station_obj in stations:
-                     sx, sy = info['sat_pos'] # Use position at time of loss for visual consistency
-                     tx, ty = info['st_pos']
-                     pygame.draw.line(screen, BLINK_RED, (int(tx), int(ty)), (int(sx), int(sy)), 2)
-            # Optional: Remove very old entries from active_losses if they weren't cleared by reconnection
-            # else:
-            #    keys_to_remove.append(key)
-        # for key in keys_to_remove: active_losses.pop(key, None)
-
+                     sx, sy = info['sat_pos']; tx, ty = info['st_pos']
+                     pygame.draw.line(screen, config.BLINK_RED, (int(tx), int(ty)), (int(sx), int(sy)), 2)
 
     # --- Draw UI ---
-    # Info Text (Top Center)
+    # Info Text (Unchanged)
     info_text = ""
+    # ... (info text generation unchanged) ...
     if selected_station:
-        conn_count = len(selected_station.connected_satellites)
-        cap = selected_station.capacity
-        status = selected_station.status.capitalize()
-        radius_km = selected_station.comm_radius / SCALE_FACTOR # Show radius in KM
-        info_text = (f"Selected Station ID: {selected_station.id} | Status: {status} | "
-                     f"Radius: {radius_km:.0f} km | "
-                     f"Connections: {conn_count}/{cap}")
-        if manual_controls_enabled:
-             info_text += " (L/R Click Icon to Change Radius)"
-    elif manual_controls_enabled:
-         info_text = "Click station icon to select. Click near Earth edge to add manually."
-    info_surface = info_font.render(info_text, True, YELLOW if selected_station else WHITE)
-    screen.blit(info_surface, (WIDTH // 2 - info_surface.get_width() // 2, 15))
+        conn_count = len(selected_station.connected_satellites); cap = selected_station.capacity; status = selected_station.status.capitalize()
+        radius_km = selected_station.comm_radius / config.SCALE_FACTOR
+        info_text = (f"Selected Station ID: {selected_station.id} | Status: {status} | Radius: {radius_km:.0f} km | Connections: {conn_count}/{cap}")
+        if manual_controls_enabled: info_text += " (L/R Click Icon to Change Radius)"
+    elif manual_controls_enabled: info_text = "Click station icon to select. Click near Earth edge to add manually."
+    info_surface = info_font.render(info_text, True, config.YELLOW if selected_station else config.WHITE)
+    screen.blit(info_surface, (config.WIDTH // 2 - info_surface.get_width() // 2, 15))
 
-    # Draw Buttons
+    # Draw Manual Buttons
     if manual_controls_enabled:
-        # button1.draw(screen) # Removed
-        # button2.draw(screen) # Removed
         button_delete_station.draw(screen)
         button_add_random_station.draw(screen)
         button_start_simulation.draw(screen)
 
-
-    # Draw Simulation Control buttons if simulation is running or has run
-    if simulation_running or simulation_end_time is not None:
+    # Draw Simulation Control buttons and Slider
+    if simulation_running or not manual_controls_enabled:
         button_terminate_simulation.draw(screen)
         button_stop_simulation.draw(screen)
-        button_speed_1x.draw(screen)
-        button_speed_2x.draw(screen)
+        # --- Draw Slider instead of buttons ---
+        speed_slider.draw(screen)
+        # --- End Draw Slider ---
 
-    # Show simulation timer if active
-    if simulation_running and simulation_end_time:
-        remaining_seconds = max(0, simulation_end_time - time.time())
-        if remaining_seconds <= 0:
-            # Simulation time ended, trigger stop action
-            stop_simulation() # This will generate report and clear state
+
+    # Show simulation timer (Using elapsed sim time)
+    if simulation_running:
+        remaining_simulation_ms = max(0, total_simulation_duration_ms - elapsed_simulation_time_ms)
+        if remaining_simulation_ms <= 0:
+            stop_simulation() # Sim time ended
         else:
-            minutes = int(remaining_seconds // 60)
-            seconds = int(remaining_seconds % 60)
-            timer_text = f"Sim Time Left: {minutes:02d}:{seconds:02d}"
-            timer_surface = info_font.render(timer_text, True, YELLOW)
-            screen.blit(timer_surface, (WIDTH - timer_surface.get_width() - 20, 20))
+            remaining_total_seconds = remaining_simulation_ms / 1000.0
+            minutes = int(remaining_total_seconds // 60)
+            seconds = int(remaining_total_seconds % 60)
+            # Show current speed from config, not slider directly, as slider might be mid-drag
+            timer_text = f"Sim Time Left: {minutes:02d}:{seconds:02d} ({config.SIMULATION_SPEED:.1f}x)"
+            timer_surface = info_font.render(timer_text, True, config.YELLOW)
+            screen.blit(timer_surface, (config.WIDTH - timer_surface.get_width() - 20, 20))
 
 
-    pygame.display.flip() # Update the full display
-
+    pygame.display.flip()
 
 # --- Cleanup ---
-# Disconnect any remaining connections cleanly on exit
 for station in stations:
     station.disconnect_all()
 pygame.quit()

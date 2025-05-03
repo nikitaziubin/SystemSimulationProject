@@ -19,7 +19,7 @@ class Station:
         self.capacity = STATION_MAX_CAPACITY
         self.connected_satellites = []
         self.received_data = 0.0
-        self.max_data_capacity = 500.0 
+        self.max_data_capacity = 5000.0 
 
         self.status = 'operational'
         self.damage_start_time = 0
@@ -38,8 +38,6 @@ class Station:
 
     def draw(self, screen_surface, is_selected, capacity_font):
         radius_color_tuple = COMM_RADIUS_SELECTED_COLOR if is_selected else COMM_RADIUS_COLOR
-
-
 
         if is_selected:
             radius_color_tuple = (0, 200, 0, 60)
@@ -112,10 +110,6 @@ class Station:
         capacity_text = f"{len(self.connected_satellites)}/{self.capacity}"
         cap_color = CAPACITY_NORMAL_COLOR if len(self.connected_satellites) < self.capacity else CAPACITY_FULL_COLOR
         capacity_surface = capacity_font.render(capacity_text, True, cap_color)
-
-        #data_text = f"{self.stored_data:.1f} GB"
-        #data_surface = capacity_font.render(data_text, True, WHITE if self.status == 'operational' else BLINK_RED)
-        #screen_surface.blit(data_surface, (blit_pos[0] + self.size // 2 - data_surface.get_width() // 2, blit_pos[1] + self.size + 20))
 
         capacity_pos = (blit_pos[0] + self.size // 2 - capacity_surface.get_width() // 2, blit_pos[1] + self.size + 2)
         screen_surface.blit(capacity_surface, capacity_pos)
