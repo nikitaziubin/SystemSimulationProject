@@ -7,7 +7,6 @@ class Station:
     _id_counter = 0
     station_damage_probability = 0.001
     station_repair_time_ms = 5000
-
     def __init__(self, x, y):
         self.id = Station._id_counter
         Station._id_counter += 1
@@ -19,7 +18,7 @@ class Station:
         self.capacity = STATION_MAX_CAPACITY
         self.connected_satellites = []
         self.received_data = 0.0
-        self.max_data_capacity = 5000.0 
+        self.max_data_capacity = 5000000.0
 
         self.status = 'operational'
         self.damage_start_time = 0

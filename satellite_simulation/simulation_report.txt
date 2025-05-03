@@ -1,21 +1,26 @@
 Simulation Report
 =====================
-Report Generated At: Sat May  3 21:10:28 2025
-Total Simulation Time Elapsed: 10m 2.1s
+Report Generated At: Sat May  3 21:30:54 2025
+Total Simulation Time Elapsed: 10m 1.5s
 Final Simulation Speed: 64.0x
 Total Satellites Simulated: 27
 Total Stations Simulated: 12
-Total Data Transferred to Stations: 1287.72 GB
-Estimated Data Lost due to Station Repair: 2.28 GB
+Total Data Transferred to Stations: 8768.46 GB
+Estimated Data Lost due to Station Repair: 323.08 GB
 
 Destroyed Satellites (0):
   None
 
 Damaged Stations Timeline:
- Station 6:
-  - Damaged: Sat May  3 21:10:18 2025, Repaired: Sat May  3 21:10:23 2025, Lost: 2.28 GB
+ Station 0:
+  - Damaged: Sat May  3 21:30:47 2025, Repaired: Sat May  3 21:30:52 2025, Lost: 323.08 GB
 
 Connection Loss Events ({len(conn_loss_log)}):
- 1. Sat: MIL-14, Station: 10, Outage Start: Sat May  3 21:10:19 2025, Duration: 9.27 s
- 2. Sat: COM-13, Station: 10, Outage Start: Sat May  3 21:10:22 2025, Duration: 5.91 s
- 3. Sat: COM-23, Station: 3, Outage Start: Sat May  3 21:10:27 2025, Duration: 0.80 s
+ 1. Sat: COM-22, Station: 0, Outage Start: Sat May  3 21:30:47 2025, Duration: 6.47 s
+ 2. Sat: COM-3, Station: 1, Outage Start: Sat May  3 21:30:48 2025, Duration: 6.07 s
+ 3. Sat: MIL-21, Station: 8, Outage Start: Sat May  3 21:30:48 2025, Duration: 5.50 s
+ 4. Sat: COM-26, Station: 11, Outage Start: Sat May  3 21:30:49 2025, Duration: 5.00 s
+ 5. Sat: COM-2, Station: 1, Outage Start: Sat May  3 21:30:51 2025, Duration: 2.71 s
+ 6. Sat: MIL-20, Station: 8, Outage Start: Sat May  3 21:30:52 2025, Duration: 2.13 s
+ 7. Sat: COM-14, Station: 7, Outage Start: Sat May  3 21:30:53 2025, Duration: 0.84 s
+ 8. Sat: COM-3, Station: 3, Outage Start: Sat May  3 21:30:54 2025, Duration: 0.15 s

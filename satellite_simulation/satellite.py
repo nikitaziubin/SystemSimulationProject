@@ -48,11 +48,11 @@ class Satellite:
 
         # --- Set data amount based on color (like original logic) ---
         if color == SATELLITE_GREEN: # Military
-            self.data_amount = 70.0 # More data
+            self.data_amount = 700.0 # More data
         elif color == SATELLITE_BLUE: # Commercial
-            self.data_amount = 30.0 # Less data
+            self.data_amount = 300.0 # Less data
         else: # Fallback
-             self.data_amount = 50.0
+             self.data_amount = 500.0
         # --- End Data Amount ---
 
         self.transfer_rate = 0.5 # GB per second

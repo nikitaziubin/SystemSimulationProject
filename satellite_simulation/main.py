@@ -425,8 +425,10 @@ while running:
     screen.fill(config.DARK_SPACE)
     # Draw Stars, Earth, Stations, Satellites (Unchanged)
     for x, y, r in config.stars: pygame.draw.circle(screen, config.STAR_COLOR, (int(x), int(y)), int(r))
-    if config.earth_image: screen.blit(config.earth_image, config.earth_image.get_rect(center=config.EARTH_POSITION))
-    else: pygame.draw.circle(screen, (0, 80, 180), config.EARTH_POSITION, config.EARTH_RADIUS_PIXELS)
+    if config.earth_image:
+        screen.blit(config.earth_image, config.earth_image.get_rect(center=config.EARTH_POSITION))
+    else:
+        pygame.draw.circle(screen, (0, 80, 180), config.EARTH_POSITION, config.EARTH_RADIUS_PIXELS)
     for station in stations: station.draw(screen, (station == selected_station), capacity_font)
     for sat in satellites: sat.draw(screen)
 

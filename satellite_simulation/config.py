@@ -1,8 +1,15 @@
+# config.py
 import random
 import pygame
 import math
+import os # Import os for path joining (optional but good practice)
 
-earth_image = None
+# --- Define Image Filename ---
+# Make sure this file exists in the same directory as the script
+EARTH_IMAGE_FILENAME = "earth.jpg"
+# --- End Image Filename ---
+
+earth_image = None # Initialize as None
 
 WIDTH, HEIGHT = 1200, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -10,6 +17,7 @@ pygame.display.set_caption("Project Kuiper Simulation")
 clock = pygame.time.Clock()
 
 # --- Colors (Unchanged) ---
+# ... (keep all color definitions) ...
 BLACK = (0, 0, 0)
 DARK_SPACE = (10, 10, 30)
 SATELLITE_BLUE = (0, 100, 180) # Commercial
@@ -44,7 +52,28 @@ EARTH_POSITION = (WIDTH // 2, HEIGHT // 2)
 KUIPER_ALTITUDES_KM = [590.0, 610.0, 630.0]
 KUIPER_ORBIT_RADII_PIXELS = [(EARTH_RADIUS_KM + alt) * SCALE_FACTOR for alt in KUIPER_ALTITUDES_KM]
 
+# --- Load and Scale Earth Image ---
+try:
+    # Construct full path (more robust)
+    script_dir = os.path.dirname(__file__) # Get directory where script is running
+    image_path = os.path.join(script_dir, EARTH_IMAGE_FILENAME)
+
+    _raw_earth_image = pygame.image.load(image_path).convert_alpha() # Load with transparency support
+    # Scale the image to the diameter based on EARTH_RADIUS_PIXELS
+    earth_diameter_pixels = int(EARTH_RADIUS_PIXELS * 2)
+    earth_image = pygame.transform.scale(_raw_earth_image, (earth_diameter_pixels, earth_diameter_pixels))
+    print(f"Successfully loaded and scaled {EARTH_IMAGE_FILENAME}")
+except FileNotFoundError:
+    print(f"Warning: Earth image '{EARTH_IMAGE_FILENAME}' not found. Drawing blue circle instead.")
+    earth_image = None # Ensure it's None if loading failed
+except pygame.error as e:
+    print(f"Warning: Error loading image '{EARTH_IMAGE_FILENAME}': {e}. Drawing blue circle instead.")
+    earth_image = None # Ensure it's None if loading failed
+# --- End Load and Scale ---
+
+
 # --- Station Parameters (Unchanged) ---
+# ... (keep station parameters) ...
 STATION_MIN_DISTANCE = 40
 MIN_STATION_COMM_RADIUS = 50
 MAX_STATION_COMM_RADIUS = 400
@@ -59,15 +88,14 @@ STATION_DAMAGE_PROBABILITY = 0.001
 STATION_REPAIR_TIME_MS = 5000
 STATION_DATA_LOSS_ON_REPAIR = 2
 
+
 # --- Damage and Blinking (Unchanged) ---
 SATELLITE_DAMAGE_PROBABILITY = 0.0003
 BLINK_DURATION_MS = 5000
 BLINK_INTERVAL_MS = 250
-# INITIAL_NO_BLINK_DELAY_MS = 1500 # Removed for clarity
 
-# --- ADD SIMULATION SPEED ---
-SIMULATION_SPEED = 1.0 # Multiplier for simulation time progression
-# --- End Simulation Speed ---
+# --- Simulation Speed (Unchanged) ---
+SIMULATION_SPEED = 1.0
 
 # --- Stars (Unchanged) ---
 STAR_COUNT = 350
