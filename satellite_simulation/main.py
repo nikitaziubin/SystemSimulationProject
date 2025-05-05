@@ -13,6 +13,11 @@ from slider import Slider
 from startsimulation import show_simulation_popup, start_simulation
 import math
 
+
+import textwrap
+from reportlab.lib.pagesizes import LETTER
+from reportlab.pdfgen import canvas
+
 # --- Globals (mostly unchanged) ---
 active_losses = {}
 connection_loss_log = []
@@ -171,7 +176,7 @@ def stop_simulation():
 
 # --- generate_report (Unchanged) ---
 def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed_sim_time_ms):
-    # ... (report generation code is identical to previous version) ...
+    # ——— Build the text report ———
     total_data = sum(station.received_data for station in stations_list)
     lost_data_damage = 0
     for station in stations_list:
@@ -179,56 +184,107 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
             if len(entry) > 2 and entry[1] is not None:
                 lost_data_damage += entry[2]
     destroyed_sats_log = Satellite.destroyed_satellites_log
-    report_filename = "simulation_report.txt"
-    with open(report_filename, "w", encoding="utf-8") as file:
-        report_text = "Simulation Report\n"
-        report_text += "=====================\n"
-        report_text += f"Report Generated At: {time.ctime()}\n"
-        sim_time_sec = final_elapsed_sim_time_ms / 1000.0
-        sim_min = int(sim_time_sec // 60)
-        sim_sec = sim_time_sec % 60
-        report_text += f"Total Simulation Time Elapsed: {sim_min}m {sim_sec:.1f}s\n"
-        report_text += f"Final Simulation Speed: {config.SIMULATION_SPEED:.1f}x\n" # Add speed info
-        report_text += f"Total Satellites Simulated: {len(satellites_list) + len(destroyed_sats_log)}\n"
-        report_text += f"Total Stations Simulated: {len(stations_list)}\n"
-        report_text += f"Total Data Transferred to Stations: {total_data:.2f} GB\n"
-        report_text += f"Estimated Data Lost due to Station Repair: {lost_data_damage:.2f} GB\n"
-        report_text += "\n"
-        report_text += f"Destroyed Satellites ({len(destroyed_sats_log)}):\n"
-        if not destroyed_sats_log: report_text += "  None\n"
-        else:
-            for i, sat_info in enumerate(destroyed_sats_log, start=1):
-                 name = getattr(sat_info, "name", "Unknown")
-                 destroy_time = getattr(sat_info, "destroyed_time", None)
-                 pos_x = getattr(sat_info, "x", "N/A")
-                 pos_y = getattr(sat_info, "y", "N/A")
-                 time_str = time.ctime(destroy_time) if destroy_time else "N/A"
-                 report_text += f" {i}. {name} Destroyed at {time_str} | Last Pos: ({pos_x:.1f}, {pos_y:.1f})\n"
-        report_text += "\nDamaged Stations Timeline:\n"
-        any_station_damage = False
-        for station in stations_list:
-            if station.damage_log:
-                any_station_damage = True
-                report_text += f" Station {station.id}:\n"
-                for entry in station.damage_log:
-                    damage_time_str = time.ctime(entry[0])
-                    if entry[1]:
-                        repair_time_str = time.ctime(entry[1])
-                        data_loss = entry[2] if len(entry) > 2 else 0.0
-                        report_text += f"  - Damaged: {damage_time_str}, Repaired: {repair_time_str}, Lost: {data_loss:.2f} GB\n"
-                    else:
-                        report_text += f"  - Damaged: {damage_time_str}, Not repaired by sim end.\n"
-        if not any_station_damage: report_text += "  None\n"
-        report_text += "\nConnection Loss Events ({len(conn_loss_log)}):\n"
-        if not conn_loss_log: report_text += "  None\n"
-        else:
-             conn_loss_log.sort(key=lambda x: x['start_time'])
-             for i, ev in enumerate(conn_loss_log, start=1):
-                 start_str = time.ctime(ev['start_time'])
-                 report_text += (f" {i}. Sat: {ev['sat']}, Station: {ev['station']}, "
-                                f"Outage Start: {start_str}, Duration: {ev['duration']:.2f} s\n")
-        file.write(report_text)
-    print(f"Report written to {report_filename}")
+
+    report_txt = []
+    report_txt.append("Simulation Report")
+    report_txt.append("=====================")
+    report_txt.append(f"Report Generated At: {time.ctime()}")
+    # Simulation time formatting
+    sim_time_sec = final_elapsed_sim_time_ms / 1000.0
+    sim_min = int(sim_time_sec // 60)
+    sim_sec = sim_time_sec % 60
+    report_txt.append(f"Total Simulation Time Elapsed: {sim_min}m {sim_sec:.1f}s")
+    report_txt.append(f"Final Simulation Speed: {config.SIMULATION_SPEED:.1f}x")
+    report_txt.append(f"Total Satellites Simulated: {len(satellites_list) + len(destroyed_sats_log)}")
+    report_txt.append(f"Total Stations Simulated: {len(stations_list)}")
+    report_txt.append(f"Total Data Transferred to Stations: {total_data:.2f} GB")
+    report_txt.append(f"Estimated Data Lost due to Station Repair: {lost_data_damage:.2f} GB")
+    report_txt.append("")
+
+    # Destroyed satellites
+    report_txt.append(f"Destroyed Satellites ({len(destroyed_sats_log)}):")
+    if not destroyed_sats_log:
+        report_txt.append("  None")
+    else:
+        for i, sat_info in enumerate(destroyed_sats_log, start=1):
+            name = getattr(sat_info, "name", "Unknown")
+            destroy_time = getattr(sat_info, "destroyed_time", None)
+            pos_x = getattr(sat_info, "x", "N/A")
+            pos_y = getattr(sat_info, "y", "N/A")
+            time_str = time.ctime(destroy_time) if destroy_time else "N/A"
+            report_txt.append(
+                f" {i}. {name} Destroyed at {time_str} | Last Pos: ({pos_x:.1f}, {pos_y:.1f})"
+            )
+    report_txt.append("")
+
+    # Damaged stations
+    report_txt.append("Damaged Stations Timeline:")
+    any_damage = False
+    for station in stations_list:
+        if station.damage_log:
+            any_damage = True
+            report_txt.append(f" Station {station.id}:")
+            for entry in station.damage_log:
+                dmg_time = time.ctime(entry[0])
+                if entry[1]:
+                    rep_time = time.ctime(entry[1])
+                    loss = entry[2] if len(entry) > 2 else 0.0
+                    report_txt.append(f"  - Damaged: {dmg_time}, Repaired: {rep_time}, Lost: {loss:.2f} GB")
+                else:
+                    report_txt.append(f"  - Damaged: {dmg_time}, Not repaired by sim end.")
+    if not any_damage:
+        report_txt.append("  None")
+    report_txt.append("")
+
+    # Connection loss events
+    report_txt.append(f"Connection Loss Events ({len(conn_loss_log)}):")
+    if not conn_loss_log:
+        report_txt.append("  None")
+    else:
+        conn_loss_log.sort(key=lambda x: x["start_time"])
+        for i, ev in enumerate(conn_loss_log, start=1):
+            start_str = time.ctime(ev["start_time"])
+            report_txt.append(
+                f" {i}. Sat: {ev['sat']}, Station: {ev['station']}, "
+                f"Outage Start: {start_str}, Duration: {ev['duration']:.2f} s"
+            )
+
+    # Save text report
+    txt_filename = "simulation_report.txt"
+    with open(txt_filename, "w", encoding="utf-8") as f:
+        f.write("\n".join(report_txt))
+    print(f"Text report written to {txt_filename}")
+
+    # ——— Convert to PDF ———
+    pdf_filename = "simulation_report.pdf"
+    c = canvas.Canvas(pdf_filename, pagesize=LETTER)
+    width, height = LETTER
+    margin = 40
+    line_h = 14
+    max_w = width - 2 * margin
+
+    y = height - margin
+    # Title
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(margin, y, "Simulation Report")
+    y -= 2 * line_h
+
+    # Body
+    c.setFont("Helvetica", 12)
+    for line in report_txt:
+        # Wrap text
+        for sub in textwrap.wrap(line, width=int(max_w / 7)) or [""]:
+            if y < margin:
+                c.showPage()
+                y = height - margin
+                c.setFont("Helvetica", 12)
+            c.drawString(margin, y, sub)
+            y -= line_h
+
+    c.save()
+    print(f"PDF report written to {pdf_filename}")
+
+    # Clear destroyed log
     Satellite.destroyed_satellites_log.clear()
 
 # --- disable_manual_controls (Unchanged) ---

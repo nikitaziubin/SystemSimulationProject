@@ -1,0 +1,27 @@
+Simulation Report
+=====================
+Report Generated At: Mon May  5 15:52:03 2025
+Total Simulation Time Elapsed: 10m 0.8s
+Final Simulation Speed: 64.0x
+Total Satellites Simulated: 27
+Total Stations Simulated: 12
+Total Data Transferred to Stations: 7565.19 GB
+Estimated Data Lost due to Station Repair: 238.22 GB
+
+Destroyed Satellites (1):
+ 1. COM-33 Destroyed at Mon May  5 15:51:58 2025 | Last Pos: (663.6, 816.0)
+
+Damaged Stations Timeline:
+ Station 0:
+  - Damaged: Mon May  5 15:51:54 2025, Repaired: Mon May  5 15:52:00 2025, Lost: 37.62 GB
+ Station 2:
+  - Damaged: Mon May  5 15:52:01 2025, Not repaired by sim end.
+ Station 7:
+  - Damaged: Mon May  5 15:51:58 2025, Repaired: Mon May  5 15:52:03 2025, Lost: 200.60 GB
+
+Connection Loss Events (5):
+ 1. Sat: COM-37, Station: 8, Outage Start: Mon May  5 15:51:52 2025, Duration: 11.02 s
+ 2. Sat: COM-33, Station: 5, Outage Start: Mon May  5 15:51:53 2025, Duration: 10.56 s
+ 3. Sat: COM-36, Station: 8, Outage Start: Mon May  5 15:51:57 2025, Duration: 6.03 s
+ 4. Sat: MIL-35, Station: 8, Outage Start: Mon May  5 15:52:01 2025, Duration: 2.72 s
+ 5. Sat: COM-49, Station: 9, Outage Start: Mon May  5 15:52:02 2025, Duration: 1.58 s
