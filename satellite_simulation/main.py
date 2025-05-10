@@ -7,6 +7,8 @@ from satellite import Satellite
 from station import Station
 from inputbox import InputBox
 from button import Button
+from reportlab.lib.pagesizes import LETTER
+import matplotlib.pyplot as plt
 # --- Import the new Slider class ---
 from slider import Slider
 # --- End Import ---
@@ -217,6 +219,20 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
             )
     report_txt.append("")
 
+    # Generate station load graph
+    station_ids = [str(station.id) for station in stations_list]
+    station_loads = [station.received_data for station in stations_list]
+    plt.figure()
+    plt.bar(station_ids, station_loads)
+    plt.xlabel('Station ID')
+    plt.ylabel('Data Received (GB)')
+    plt.title('Station Load')
+    plt.tight_layout()
+    graph_filename = 'station_load.png'
+    plt.savefig(graph_filename)
+    plt.close()
+    print(f"Station load graph saved to {graph_filename}")
+
     # Damaged stations
     report_txt.append("Damaged Stations Timeline:")
     any_damage = False
@@ -280,6 +296,15 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
                 c.setFont("Helvetica", 12)
             c.drawString(margin, y, sub)
             y -= line_h
+
+    # Add the station load graph on a new page
+    c.showPage()
+    # Position image at margin, from top
+    img_width = width - 2 * margin
+    img_height = img_width * 0.6  # maintain aspect ratio
+    c.drawImage(graph_filename, margin, height - margin - img_height, width=img_width, height=img_height, preserveAspectRatio=True)
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(margin, height - margin - img_height - line_h, "Figure: Station Load by Data Received (GB)")
 
     c.save()
     print(f"PDF report written to {pdf_filename}")
