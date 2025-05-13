@@ -159,9 +159,18 @@ def stop_simulation():
     config.SIMULATION_SPEED = 1.0 
     speed_slider.set_value(1.0)
 
-def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed_sim_time_ms):
+def generate_report(satellites_list,
+                    stations_list,
+                    conn_loss_log,
+                    final_elapsed_sim_time_ms,
+                    load_time_series=None):            # default to None to allow omission
+    # normalize missing time series
+    if load_time_series is None:
+        load_time_series = []                
+
+    # ——— Build the text report ———
     total_data = sum(station.received_data for station in stations_list)
-    lost_data_damage = 0
+    lost_data_damage = 0.0
     for station in stations_list:
         for entry in station.damage_log:
             if len(entry) > 2 and entry[1] is not None:
@@ -172,7 +181,7 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
     report_txt.append("Simulation Report")
     report_txt.append("=====================")
     report_txt.append(f"Report Generated At: {time.ctime()}")
-
+    # Simulation time formatting
     sim_time_sec = final_elapsed_sim_time_ms / 1000.0
     sim_min = int(sim_time_sec // 60)
     sim_sec = sim_time_sec % 60
@@ -184,7 +193,7 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
     report_txt.append(f"Estimated Data Lost due to Station Repair: {lost_data_damage:.2f} GB")
     report_txt.append("")
 
-    #destroyed satellites
+    # Destroyed satellites
     report_txt.append(f"Destroyed Satellites ({len(destroyed_sats_log)}):")
     if not destroyed_sats_log:
         report_txt.append("  None")
@@ -200,8 +209,8 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
             )
     report_txt.append("")
 
-    #generate station load graph
-    station_ids = [str(station.id) for station in stations_list]
+    # Generate station load bar chart
+    station_ids   = [str(station.id) for station in stations_list]
     station_loads = [station.received_data for station in stations_list]
     plt.figure()
     plt.bar(station_ids, station_loads)
@@ -209,12 +218,56 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
     plt.ylabel('Data Received (GB)')
     plt.title('Station Load')
     plt.tight_layout()
-    graph_filename = 'station_load.png'
-    plt.savefig(graph_filename)
+    bar_fn = 'station_load.png'
+    plt.savefig(bar_fn)
     plt.close()
-    print(f"Station load graph saved to {graph_filename}")
 
-    #damaged stations
+    # —— Maximum Connected Satellites per Station Bar Chart ——
+    # whether or not we have a time series, compute max
+    num_stations    = len(stations_list)
+    # if time series exists, use max from series; else use final connections
+    if load_time_series:
+        max_connections = [0] * num_stations
+        for _, loads in load_time_series:
+            for idx, val in enumerate(loads):
+                if val > max_connections[idx]:
+                    max_connections[idx] = val
+    else:
+        max_connections = [len(station.connected_satellites) for station in stations_list]
+
+    plt.figure()
+    plt.bar(station_ids, max_connections)
+    plt.xlabel('Station ID')
+    plt.ylabel('Max Connected Satellites')
+    plt.title('Maximum Connected Satellites per Station')
+    plt.tight_layout()
+    max_conn_fn = 'station_max_connections.png'
+    plt.savefig(max_conn_fn)
+    plt.close()
+
+    # —— Station-load Min/Avg/Max Over Time scatter plot ——
+    if load_time_series:
+        times = [t for t, loads in load_time_series]
+        mins   = [min(loads)           for t, loads in load_time_series]
+        avgs   = [sum(loads)/len(loads) for t, loads in load_time_series]
+        maxs   = [max(loads)           for t, loads in load_time_series]
+
+        plt.figure()
+        plt.scatter(times, mins, label='Min Load', marker='o')
+        plt.scatter(times, avgs, label='Avg Load', marker='o')
+        plt.scatter(times, maxs, label='Max Load', marker='o')
+        plt.xlabel('Virtual Time (ms)')
+        plt.ylabel('Station Load (GB)')
+        plt.title('Station Load Min/Avg/Max Over Time')
+        plt.legend()
+        plt.tight_layout()
+        stats_fn = 'station_load_stats.png'
+        plt.savefig(stats_fn)
+        plt.close()
+    else:
+        print("No load_time_series data; skipping Min/Avg/Max plots.")
+
+    # Damaged stations timeline
     report_txt.append("Damaged Stations Timeline:")
     any_damage = False
     for station in stations_list:
@@ -233,7 +286,7 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
         report_txt.append("  None")
     report_txt.append("")
 
-    #connection loss events
+    # Connection loss events
     report_txt.append(f"Connection Loss Events ({len(conn_loss_log)}):")
     if not conn_loss_log:
         report_txt.append("  None")
@@ -246,13 +299,12 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
                 f"Outage Start: {start_str}, Duration: {ev['duration']:.2f} s"
             )
 
-    #save text report
+    # Save text report
     txt_filename = "simulation_report.txt"
     with open(txt_filename, "w", encoding="utf-8") as f:
         f.write("\n".join(report_txt))
-    print(f"Text report written to {txt_filename}")
 
-    #converting to PDF
+    # ——— Convert to PDF ———
     pdf_filename = "simulation_report.pdf"
     c = canvas.Canvas(pdf_filename, pagesize=LETTER)
     width, height = LETTER
@@ -261,15 +313,12 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
     max_w = width - 2 * margin
 
     y = height - margin
-    # Title
     c.setFont("Helvetica-Bold", 16)
     c.drawString(margin, y, "Simulation Report")
     y -= 2 * line_h
 
-    # Body
     c.setFont("Helvetica", 12)
     for line in report_txt:
-        # Wrap text
         for sub in textwrap.wrap(line, width=int(max_w / 7)) or [""]:
             if y < margin:
                 c.showPage()
@@ -278,19 +327,51 @@ def generate_report(satellites_list, stations_list, conn_loss_log, final_elapsed
             c.drawString(margin, y, sub)
             y -= line_h
 
-    # Add the station load graph on a new page
+    # Embed bar chart
     c.showPage()
-    # Position image at margin, from top
-    img_width = width - 2 * margin
-    img_height = img_width * 0.6  # maintain aspect ratio
-    c.drawImage(graph_filename, margin, height - margin - img_height, width=img_width, height=img_height, preserveAspectRatio=True)
+    img_w = width - 2 * margin
+    img_h = img_w * 0.6
+    c.drawImage(bar_fn, margin, height - margin - img_h,
+                width=img_w, height=img_h, preserveAspectRatio=True)
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(margin, height - margin - img_height - line_h, "Figure: Station Load by Data Received (GB)")
+    c.drawString(margin,
+                 height - margin - img_h - line_h,
+                 "Figure: Station Load by Data Received (GB)")
+
+    # Embed max connections chart
+    c.showPage()
+    c.drawImage(max_conn_fn, margin, height - margin - img_h,
+                width=img_w, height=img_h, preserveAspectRatio=True)
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(margin,
+                 height - margin - img_h - line_h,
+                 "Figure: Maximum Connected Satellites per Station")
+
+    # Embed scatter plot if available
+    if load_time_series:
+        c.showPage()
+        c.drawImage(stats_fn, margin, height - margin - img_h,
+                    width=img_w, height=img_h, preserveAspectRatio=True)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(margin,
+                     height - margin - img_h - line_h,
+                     "Figure: Station Load Min/Avg/Max Over Time")
 
     c.save()
-    print(f"PDF report written to {pdf_filename}")
 
+    # Clear destroyed log
     Satellite.destroyed_satellites_log.clear()
+    print(f"Text report:   {txt_filename}")
+    print(f"PDF report:    {pdf_filename}")
+    print(f"Bar chart:     {bar_fn}")
+    print(f"Max connections chart:  {max_conn_fn}")
+    if load_time_series:
+        print(f"Scatter plot:  {stats_fn}")
+
+    # Clear destroyed log
+    Satellite.destroyed_satellites_log.clear()
+
+
 
 def disable_manual_controls():
     global manual_controls_enabled
