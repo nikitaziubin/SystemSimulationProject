@@ -1,6 +1,6 @@
-from satellite import Satellite # Updated Satellite class
+from satellite import Satellite
 from station import Station
-from config import * # Import SATELLITE_BLUE, SATELLITE_GREEN etc.
+from config import *
 import math
 import random
 import time
@@ -8,23 +8,14 @@ from inputbox import InputBox
 from button import Button
 import pygame
 
-# Initialize pygame if not already done (or ensure it's done in main)
-# pygame.init()
-
 POPUP_WIDTH, POPUP_HEIGHT = 500, 600
 popup_screen = None
 popup_clock = pygame.time.Clock()
 popup_font = pygame.font.Font(None, 26)
 satellite_counter = 0
-# --- start_simulation function ---
 def start_simulation(satellites_list, stations_list, disable_manual_controls_callback, params):
-    # --- ADD global declaration here ---
-    # This tells the function to use the 'satellite_counter' variable
-    # defined in the global scope (which should be in main.py)
     global satellite_counter
-    # --- End global declaration ---
 
-    # Get simulation parameters (unchanged)
     duration_minutes = int(params["duration"])
     duration_seconds = int(params["duration_seconds"])
     num_satellites = int(params["num_satellites"])
@@ -34,16 +25,14 @@ def start_simulation(satellites_list, stations_list, disable_manual_controls_cal
     satellite_damage_prob = float(params.get("satellite_damage_prob", Satellite.satellite_damage_probability))
     satellite_recovery_sec = float(params.get("satellite_recovery_time_sec", Satellite.satellite_repair_time_seconds))
 
-    # Apply overrides (unchanged)
     Station.station_damage_probability = station_damage_prob
     Station.station_repair_time_ms = station_recovery_sec * 1000
     Satellite.satellite_damage_probability = satellite_damage_prob
     Satellite.satellite_repair_time_seconds = satellite_recovery_sec
 
-    # --- Create Stations (Unchanged) ---
+    #stations creatinon
     stations_list.clear()
     Station._id_counter = 0
-    # ... (station creation loop is identical to previous version) ...
     for i in range(num_stations):
         max_attempts = 50
         placed = False
@@ -64,12 +53,7 @@ def start_simulation(satellites_list, stations_list, disable_manual_controls_cal
             print(f"Warning: Could not place station {i+1} without overlap after {max_attempts} attempts.")
 
 
-    # --- Create Satellites (Uses global satellite_counter now) ---
     satellites_list.clear()
-    # --- REMOVED the try...except block for satellite_counter ---
-    # The 'global' keyword handles making it accessible.
-    # Ensure it's reset in main.py before this function is called.
-
     altitudes_km = KUIPER_ALTITUDES_KM
 
     for i in range(num_satellites):
@@ -80,20 +64,16 @@ def start_simulation(satellites_list, stations_list, disable_manual_controls_cal
         color = SATELLITE_BLUE if sat_type == 'A' else SATELLITE_GREEN
         prefix = "COM" if sat_type == 'A' else "MIL"
 
-        # This line should now work correctly
         name = f"{prefix}-{satellite_counter}"
 
         satellites_list.append(Satellite(altitude_km=altitude, name=name, color=color, initial_angle=initial_angle))
 
-        # Increment the global counter directly
         satellite_counter += 1
 
-    # --- Rest of the function is unchanged ---
     disable_manual_controls_callback()
     start_time = time.time()
     simulation_end_time = start_time + (duration_minutes * 60) + duration_seconds
     print(f"--- Simulation Setup ---")
-    # ... (print statements are identical) ...
     print(f"Duration: {duration_minutes}m {duration_seconds}s")
     print(f"Satellites: {len(satellites_list)} (Altitudes: {KUIPER_ALTITUDES_KM} km)")
     print(f"Stations: {len(stations_list)}")
@@ -103,11 +83,7 @@ def start_simulation(satellites_list, stations_list, disable_manual_controls_cal
 
     return simulation_end_time
 
-
-# --- show_simulation_popup function (Unchanged from previous step) ---
 def show_simulation_popup():
-    # (Code is identical to the previous version provided)
-    # ... [rest of show_simulation_popup function] ...
     global popup_screen
 
     main_screen = pygame.display.get_surface()
@@ -195,12 +171,12 @@ def show_simulation_popup():
         "num_satellites": input_boxes[2].get_value(),
         "num_stations": input_boxes[3].get_value(),
         "station_recovery_time_sec": input_boxes[4].get_value(),
-        "station_damage_prob": input_boxes[5].get_value(), # % input
+        "station_damage_prob": input_boxes[5].get_value(),
         "satellite_recovery_time_sec": input_boxes[6].get_value(),
-        "satellite_damage_prob": input_boxes[7].get_value(), # % input
+        "satellite_damage_prob": input_boxes[7].get_value(),
     }
 
-    # Convert probabilities and handle defaults (Unchanged logic)
+    # convert probabilities and handle defaults
     sim_params_st_dmg_prob = simulation_params["station_damage_prob"]
     simulation_params["station_damage_prob"] = sim_params_st_dmg_prob / 100.0 if sim_params_st_dmg_prob else Station.station_damage_probability
 

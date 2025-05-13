@@ -14,7 +14,7 @@ class InputBox:
         self.active = False
         self.label = FONT.render(label_text, True, pygame.Color('white'))
         self.label_pos = (x, y - 25)
-        self.is_float = is_float  # if True, allow dot for float input
+        self.is_float = is_float
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -28,7 +28,6 @@ class InputBox:
             elif event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
             else:
-                # Accept numbers or dot if float input is enabled
                 if len(self.text) < 10:
                     if event.unicode.isdigit():
                         self.text += event.unicode

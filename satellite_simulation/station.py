@@ -72,7 +72,7 @@ class Station:
                     pygame.draw.polygon(radius_surface, radius_color, polygon_points)
                 except Exception as e:
                     print(f"Warning: Could not draw polygon for station {self.id} - {e}")        
-            outline_color = (20, 70, 20)  # Light green dashed line
+            outline_color = (20, 70, 20)
 
             for i in range(1, len(polygon_points) - 1):
                 if i % 2 == 0: 
@@ -105,7 +105,6 @@ class Station:
         blit_pos = (int(self.x - self.size // 2), int(self.y - self.size // 2))
         screen_surface.blit(self.surface, blit_pos)
 
-        # --- Draw Capacity Indicator (same as before) ---
         capacity_text = f"{len(self.connected_satellites)}/{self.capacity}"
         cap_color = CAPACITY_NORMAL_COLOR if len(self.connected_satellites) < self.capacity else CAPACITY_FULL_COLOR
         capacity_surface = capacity_font.render(capacity_text, True, cap_color)
@@ -135,13 +134,11 @@ class Station:
                 lost_data = self.received_data / STATION_DATA_LOSS_ON_REPAIR
                 self.received_data -= lost_data
 
-                self.damage_log[-1][1] = time.time()   # Repair time
+                self.damage_log[-1][1] = time.time()
                 self.damage_log[-1].append(lost_data)  
 
                 print(f"Station {self.id} repaired, lost {lost_data:.1f} GB")
 
-
-    # --- Other Station methods (is_near, is_satellite_in_range, etc.) remain unchanged ---
     def is_near(self, other_station):
         return math.dist((self.x, self.y), (other_station.x, other_station.y)) < STATION_MIN_DISTANCE
 
